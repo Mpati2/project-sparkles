@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Sparkles Terminal</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #0a0a0a;
+            color: #00ff41;
+            padding: 20px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+        }
+
+        .panel {
+            border: 1px solid #00ff41;
+            padding: 20px;
+            background: #000;
+        }
+
+        input,
+        select {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+            background: #111;
+            border: 1px solid #00ff41;
+            color: #00ff41;
+        }
+
+        button {
+            width: 95%;
+            padding: 12px;
+            background: #00ff41;
+            color: #000;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .card {
+            border: 1px solid #444;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #111;
+            border-left: 5px solid #00ff41;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>✨ PROJECT SPARKLES</h1>
+    <div class="grid">
+        <div class="panel">
+            <h2>Manual Entry</h2>
+            <select id="type">
+                <option value="Earnings">EARNINGS</option>
+                <option value="Economic">ECONOMIC</option>
+            </select>
+            <input type="text" id="asset" placeholder="TICKER (e.g. NVDA)">
+            <input type="text" id="consensus" placeholder="CONSENSUS">
+            <input type="text" id="previous" placeholder="PREVIOUS">
+            <button onclick="analyze()">EXECUTE AI ANALYSIS</button>
+        </div>
+        <div id="results" class="panel">
+            <h2>Live Trade Signals</h2>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+
+</html>
