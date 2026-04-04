@@ -1,77 +1,1112 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-    <title>Sparkles Terminal</title>
-    <style>
-        body {
-            font-family: monospace;
-            background: #0a0a0a;
-            color: #00ff41;
-            padding: 20px;
-        }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Project Sparkles</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #1a1a24;
+    --border: #252535;
+    --accent: #7c5cfc;
+    --accent2: #fc5c7c;
+    --green: #2dcc8f;
+    --red: #fc5c5c;
+    --amber: #fcb05c;
+    --text: #e8e8f0;
+    --muted: #6b6b8a;
+    --mono: 'Space Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
 
-        .grid {
-            display: grid;
-            grid-template-columns: 350px 1fr;
-            gap: 20px;
-        }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .panel {
-            border: 1px solid #00ff41;
-            padding: 20px;
-            background: #000;
-        }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
 
-        input,
-        select {
-            width: 90%;
-            padding: 10px;
-            margin: 10px 0;
-            background: #111;
-            border: 1px solid #00ff41;
-            color: #00ff41;
-        }
+  /* NOISE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
 
-        button {
-            width: 95%;
-            padding: 12px;
-            background: #00ff41;
-            color: #000;
-            border: none;
-            font-weight: bold;
-            cursor: pointer;
-        }
+  /* HEADER */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 32px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: rgba(10,10,15,0.92);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+  }
 
-        .card {
-            border: 1px solid #444;
-            padding: 15px;
-            margin-bottom: 15px;
-            background: #111;
-            border-left: 5px solid #00ff41;
-        }
-    </style>
+  .logo {
+    font-size: 1.2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .logo span { font-family: var(--mono); font-size: 0.8rem; color: var(--muted); -webkit-text-fill-color: var(--muted); }
+
+  .status-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--red);
+    display: inline-block; margin-right: 8px;
+    animation: pulse 2s infinite;
+  }
+  .status-dot.ok { background: var(--green); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  .header-right { display: flex; align-items: center; gap: 16px; font-family: var(--mono); font-size: 0.72rem; color: var(--muted); }
+
+  /* NAV TABS */
+  .nav {
+    display: flex;
+    gap: 2px;
+    padding: 20px 32px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tab-btn {
+    padding: 10px 24px;
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 0.82rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.2s;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* STATS BAR */
+  .stats-bar {
+    display: flex;
+    gap: 1px;
+    padding: 16px 32px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stat-item {
+    flex: 1;
+    text-align: center;
+    padding: 12px;
+    border-radius: 6px;
+  }
+
+  .stat-value {
+    font-family: var(--mono);
+    font-size: 1.6rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .stat-label { font-size: 0.68rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 4px; }
+
+  .stat-item.wins .stat-value { color: var(--green); }
+  .stat-item.losses .stat-value { color: var(--red); }
+  .stat-item.partial .stat-value { color: var(--amber); }
+  .stat-item.rate .stat-value { color: var(--accent); }
+
+  /* MAIN LAYOUT */
+  .main {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 0;
+    min-height: calc(100vh - 130px);
+  }
+
+  /* SIDEBAR (Add Event) */
+  .sidebar {
+    border-right: 1px solid var(--border);
+    padding: 24px;
+    background: var(--surface);
+    position: sticky;
+    top: 61px;
+    height: calc(100vh - 61px);
+    overflow-y: auto;
+  }
+
+  .sidebar-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+
+  .form-group { margin-bottom: 14px; }
+
+  label {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  input, select, textarea {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    padding: 9px 12px;
+    border-radius: 6px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  select option { background: var(--surface2); }
+  textarea { resize: vertical; min-height: 60px; }
+
+  .btn {
+    width: 100%;
+    padding: 12px;
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), #5a3fd8);
+    color: #fff;
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(124,92,252,0.4); }
+  .btn-primary:active { transform: none; }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  .btn-sm {
+    width: auto;
+    padding: 6px 14px;
+    font-size: 0.68rem;
+  }
+
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  .btn-danger {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--red);
+  }
+  .btn-danger:hover { border-color: var(--red); background: rgba(252,92,92,0.08); }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  /* EVENT LIST */
+  .event-list { padding: 24px 32px; }
+
+  .list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .list-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .event-count {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    background: var(--surface2);
+    padding: 2px 8px;
+    border-radius: 20px;
+  }
+
+  /* EVENT CARD */
+  .event-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+    animation: slideIn 0.3s ease;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .event-card:hover { border-color: #353550; }
+  .event-card.resulted-correct { border-left: 3px solid var(--green); }
+  .event-card.resulted-incorrect { border-left: 3px solid var(--red); }
+  .event-card.resulted-partial { border-left: 3px solid var(--amber); }
+
+  .event-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .event-header:hover { background: var(--surface2); }
+
+  .event-meta { display: flex; align-items: center; gap: 12px; }
+
+  .event-type-badge {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  .badge-earnings { background: rgba(124,92,252,0.15); color: var(--accent); border: 1px solid rgba(124,92,252,0.3); }
+  .badge-economic { background: rgba(45,204,143,0.1); color: var(--green); border: 1px solid rgba(45,204,143,0.2); }
+
+  .event-name { font-weight: 700; font-size: 0.92rem; }
+  .event-date { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); }
+
+  .event-actions { display: flex; gap: 8px; align-items: center; }
+
+  .status-badge {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  .status-pending { background: rgba(107,107,138,0.15); color: var(--muted); }
+  .status-analyzed { background: rgba(252,176,92,0.12); color: var(--amber); border: 1px solid rgba(252,176,92,0.25); }
+  .status-resulted { background: rgba(45,204,143,0.1); color: var(--green); border: 1px solid rgba(45,204,143,0.2); }
+  .status-resulted.wrong { background: rgba(252,92,92,0.08); color: var(--red); border: 1px solid rgba(252,92,92,0.2); }
+
+  /* EXPAND BODY */
+  .event-body { display: none; border-top: 1px solid var(--border); }
+  .event-body.open { display: block; }
+
+  /* INPUT ROW (consensus, previous etc) */
+  .input-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 12px;
+    padding: 16px 18px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .input-item { }
+  .input-item .label { font-size: 0.62rem; color: var(--muted); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  .input-item .value { font-family: var(--mono); font-size: 0.85rem; margin-top: 2px; }
+
+  /* AI ANALYSIS */
+  .analysis-section { padding: 18px; }
+
+  .analyze-prompt {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    background: var(--bg);
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    font-size: 0.8rem;
+    margin-bottom: 12px;
+  }
+
+  .ai-result { }
+
+  .ai-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .ai-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+
+  .ai-card-label { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+
+  .ai-card-value { font-family: var(--mono); font-size: 0.88rem; }
+  .ai-card-value.up { color: var(--green); }
+  .ai-card-value.down { color: var(--red); }
+  .ai-card-value.neutral { color: var(--amber); }
+
+  .ai-card-sub { font-size: 0.72rem; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+
+  /* TRADE BOX */
+  .trade-box {
+    background: linear-gradient(135deg, rgba(124,92,252,0.08), rgba(252,92,124,0.05));
+    border: 1px solid rgba(124,92,252,0.25);
+    border-radius: 8px;
+    padding: 14px;
+    display: grid;
+    grid-template-columns: auto 1fr 1fr 1fr;
+    gap: 12px 20px;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+
+  .trade-dir {
+    font-family: var(--mono);
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 6px;
+  }
+
+  .trade-dir.BUY { background: rgba(45,204,143,0.15); color: var(--green); border: 1px solid rgba(45,204,143,0.3); }
+  .trade-dir.SHORT { background: rgba(252,92,92,0.12); color: var(--red); border: 1px solid rgba(252,92,92,0.25); }
+  .trade-dir.NO_TRADE { background: rgba(107,107,138,0.15); color: var(--muted); border: 1px solid var(--border); }
+
+  .trade-level { text-align: center; }
+  .trade-level-label { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .trade-level-value { font-family: var(--mono); font-size: 0.92rem; margin-top: 2px; }
+  .trade-level-value.entry { color: var(--text); }
+  .trade-level-value.tp { color: var(--green); }
+  .trade-level-value.sl { color: var(--red); }
+
+  .rationale-text { font-size: 0.75rem; color: var(--muted); line-height: 1.5; padding: 10px 14px; background: var(--bg); border-radius: 6px; border: 1px solid var(--border); margin-bottom: 10px; }
+
+  .confidence-bar-wrap { margin-bottom: 14px; }
+  .confidence-bar-label { display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--muted); margin-bottom: 4px; font-family: var(--mono); }
+  .confidence-bar { height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+  .confidence-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width 1s ease; }
+
+  /* PROXY SIGNALS */
+  .signals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .signal-item { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; font-size: 0.72rem; }
+  .signal-item .sig-label { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
+
+  /* RISKS */
+  .risks { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .risk-tag { background: rgba(252,176,92,0.08); border: 1px solid rgba(252,176,92,0.2); color: var(--amber); font-size: 0.68rem; padding: 4px 10px; border-radius: 20px; }
+
+  /* RESULT SECTION */
+  .result-section {
+    border-top: 1px solid var(--border);
+    padding: 14px 18px;
+    background: var(--surface2);
+  }
+
+  .result-section-title { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+
+  .result-form { display: grid; grid-template-columns: 1fr 1fr 1fr auto auto; gap: 8px; align-items: end; }
+
+  .result-outcome-btns { display: flex; gap: 6px; }
+
+  .outcome-btn {
+    padding: 8px 14px;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .outcome-btn.correct:hover, .outcome-btn.correct.selected { background: rgba(45,204,143,0.12); border-color: var(--green); color: var(--green); }
+  .outcome-btn.partial:hover, .outcome-btn.partial.selected { background: rgba(252,176,92,0.1); border-color: var(--amber); color: var(--amber); }
+  .outcome-btn.incorrect:hover, .outcome-btn.incorrect.selected { background: rgba(252,92,92,0.08); border-color: var(--red); color: var(--red); }
+
+  /* RESULTED DISPLAY */
+  .result-display { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .result-outcome-badge { font-family: var(--mono); font-size: 0.72rem; font-weight: 700; padding: 4px 12px; border-radius: 4px; }
+  .result-outcome-badge.correct { background: rgba(45,204,143,0.15); color: var(--green); }
+  .result-outcome-badge.incorrect { background: rgba(252,92,92,0.1); color: var(--red); }
+  .result-outcome-badge.partial { background: rgba(252,176,92,0.1); color: var(--amber); }
+
+  /* LOADING */
+  .loading-indicator {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 18px;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--accent);
+  }
+
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(124,92,252,0.2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* EMPTY STATE */
+  .empty-state {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 60px 20px;
+    color: var(--muted);
+    text-align: center;
+    gap: 12px;
+  }
+
+  .empty-state .icon { font-size: 2.5rem; opacity: 0.3; }
+  .empty-state p { font-size: 0.82rem; max-width: 260px; line-height: 1.5; }
+
+  /* SECTION TOGGLE */
+  .type-fields { display: none; }
+  .type-fields.active { display: block; }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .main { grid-template-columns: 1fr; }
+    .sidebar { position: static; height: auto; }
+    .ai-grid { grid-template-columns: 1fr; }
+    .trade-box { grid-template-columns: auto 1fr 1fr; }
+    .result-form { grid-template-columns: 1fr 1fr; }
+  }
+
+  .section-divider {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 6px;
+    margin: 16px 0 12px;
+  }
+
+  .prose-block { font-size: 0.74rem; color: var(--muted); line-height: 1.5; padding: 10px 12px; background: var(--bg); border-radius: 6px; border-left: 2px solid var(--accent); }
+</style>
 </head>
-
 <body>
-    <h1>✨ PROJECT SPARKLES</h1>
-    <div class="grid">
-        <div class="panel">
-            <h2>Manual Entry</h2>
-            <select id="type">
-                <option value="Earnings">EARNINGS</option>
-                <option value="Economic">ECONOMIC</option>
-            </select>
-            <input type="text" id="asset" placeholder="TICKER (e.g. NVDA)">
-            <input type="text" id="consensus" placeholder="CONSENSUS">
-            <input type="text" id="previous" placeholder="PREVIOUS">
-            <button onclick="analyze()">EXECUTE AI ANALYSIS</button>
-        </div>
-        <div id="results" class="panel">
-            <h2>Live Trade Signals</h2>
-        </div>
-    </div>
-    <script src="app.js"></script>
-</body>
 
+<header class="header">
+  <div class="logo">
+    Project Sparkles
+    <span>// Trading Economic Events</span>
+  </div>
+  <div class="header-right">
+    <span><span class="status-dot" id="apiDot"></span><span id="apiStatus">Checking...</span></span>
+  </div>
+</header>
+
+<div style="display:flex; border-bottom: 1px solid var(--border); padding: 0 32px; background: var(--surface);">
+  <button class="tab-btn active" id="tabEarnings" onclick="switchTab('earnings')">📊 Earnings</button>
+  <button class="tab-btn" id="tabEconomic" onclick="switchTab('economic')">📅 Economic</button>
+</div>
+
+<!-- STATS BAR -->
+<div class="stats-bar" id="statsBar">
+  <div class="stat-item wins"><div class="stat-value" id="statCorrect">—</div><div class="stat-label">Correct</div></div>
+  <div class="stat-item partial"><div class="stat-value" id="statPartial">—</div><div class="stat-label">Partial</div></div>
+  <div class="stat-item losses"><div class="stat-value" id="statIncorrect">—</div><div class="stat-label">Incorrect</div></div>
+  <div class="stat-item rate"><div class="stat-value" id="statRate">—%</div><div class="stat-label">Win Rate</div></div>
+  <div class="stat-item"><div class="stat-value" id="statTotal">—</div><div class="stat-label">Total Tracked</div></div>
+</div>
+
+<div class="main">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-title">+ Add Event</div>
+
+    <div class="form-group">
+      <label>Event Type</label>
+      <select id="formType" onchange="onTypeChange()">
+        <option value="earnings">Earnings</option>
+        <option value="economic">Economic</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Event Date</label>
+      <input type="date" id="formDate" />
+    </div>
+
+    <div class="form-group">
+      <label>Release Time (ET)</label>
+      <input type="time" id="formTime" value="08:30" />
+    </div>
+
+    <!-- EARNINGS FIELDS -->
+    <div class="type-fields active" id="earningsFields">
+      <div class="form-group">
+        <label>Ticker Symbol</label>
+        <input type="text" id="formTicker" placeholder="e.g. AAPL" style="text-transform:uppercase" />
+      </div>
+      <div class="form-group">
+        <label>Company Name <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+        <input type="text" id="formCompanyName" placeholder="e.g. Apple Inc." />
+      </div>
+      <div class="form-group">
+        <label>EPS Estimate ($)</label>
+        <input type="number" id="formEpsEstimate" placeholder="e.g. 2.35" step="0.01" />
+      </div>
+      <div class="form-group">
+        <label>EPS Previous ($)</label>
+        <input type="number" id="formEpsPrevious" placeholder="e.g. 2.10" step="0.01" />
+      </div>
+      <div class="form-group">
+        <label>Revenue Estimate ($B)</label>
+        <input type="number" id="formRevEstimate" placeholder="e.g. 124.3" step="0.1" />
+      </div>
+      <div class="form-group">
+        <label>Revenue Previous ($B)</label>
+        <input type="number" id="formRevPrevious" placeholder="e.g. 119.6" step="0.1" />
+      </div>
+    </div>
+
+    <!-- ECONOMIC FIELDS -->
+    <div class="type-fields" id="economicFields">
+      <div class="form-group">
+        <label>Event Name</label>
+        <input type="text" id="formEcoName" placeholder="e.g. Initial Jobless Claims" />
+      </div>
+      <div class="form-group">
+        <label>Consensus Forecast</label>
+        <input type="text" id="formEcoConsensus" placeholder="e.g. 215K or 0.3%" />
+      </div>
+      <div class="form-group">
+        <label>Previous Release</label>
+        <input type="text" id="formEcoPrevious" placeholder="e.g. 220K or 0.4%" />
+      </div>
+      <div class="form-group">
+        <label>Unit <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+        <input type="text" id="formEcoUnit" placeholder="e.g. K, %, M" />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Notes <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+      <textarea id="formNotes" placeholder="Any context, catalysts, or macro themes..."></textarea>
+    </div>
+
+    <button class="btn btn-primary" id="addBtn" onclick="addEvent()">Add Event</button>
+  </aside>
+
+  <!-- EVENT LIST -->
+  <main class="event-list">
+    <div class="list-header">
+      <span class="list-title" id="listTitle">Earnings Events</span>
+      <span class="event-count" id="eventCount">0 events</span>
+    </div>
+    <div id="eventList"></div>
+  </main>
+</div>
+
+<script>
+  let currentTab = 'earnings';
+  let events = [];
+  let selectedOutcome = {};
+
+  // ── INIT ──
+  async function init() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('formDate').value = today;
+    checkStatus();
+    loadStats();
+    loadEvents();
+  }
+
+  async function checkStatus() {
+    try {
+      const r = await fetch('/api/status');
+      const s = await r.json();
+      const dot = document.getElementById('apiDot');
+      const label = document.getElementById('apiStatus');
+      if (s.claude) {
+        dot.classList.add('ok');
+        label.textContent = 'Claude connected';
+      } else {
+        label.textContent = 'Claude key missing';
+      }
+    } catch(e) {
+      document.getElementById('apiStatus').textContent = 'Server offline';
+    }
+  }
+
+  function switchTab(tab) {
+    currentTab = tab;
+    document.getElementById('tabEarnings').classList.toggle('active', tab === 'earnings');
+    document.getElementById('tabEconomic').classList.toggle('active', tab === 'economic');
+    document.getElementById('listTitle').textContent = tab === 'earnings' ? 'Earnings Events' : 'Economic Events';
+    document.getElementById('formType').value = tab;
+    onTypeChange();
+    loadEvents();
+  }
+
+  function onTypeChange() {
+    const t = document.getElementById('formType').value;
+    document.getElementById('earningsFields').classList.toggle('active', t === 'earnings');
+    document.getElementById('economicFields').classList.toggle('active', t === 'economic');
+  }
+
+  // ── STATS ──
+  async function loadStats() {
+    try {
+      const r = await fetch('/api/stats');
+      const s = await r.json();
+      document.getElementById('statCorrect').textContent = s.correct;
+      document.getElementById('statPartial').textContent = s.partial;
+      document.getElementById('statIncorrect').textContent = s.incorrect;
+      document.getElementById('statRate').textContent = s.winRate + '%';
+      document.getElementById('statTotal').textContent = s.total;
+    } catch(e) {}
+  }
+
+  // ── LOAD EVENTS ──
+  async function loadEvents() {
+    try {
+      const r = await fetch(`/api/events?type=${currentTab}`);
+      const d = await r.json();
+      events = d.events;
+      renderEvents();
+      document.getElementById('eventCount').textContent = `${events.length} event${events.length !== 1 ? 's' : ''}`;
+    } catch(e) {
+      document.getElementById('eventList').innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><p>Could not connect to server. Is it running?</p></div>`;
+    }
+  }
+
+  // ── ADD EVENT ──
+  async function addEvent() {
+    const type = document.getElementById('formType').value;
+    const btn = document.getElementById('addBtn');
+    btn.disabled = true;
+    btn.textContent = 'Adding...';
+
+    const body = {
+      type,
+      eventDate: document.getElementById('formDate').value,
+      eventTime: document.getElementById('formTime').value,
+      notes: document.getElementById('formNotes').value,
+    };
+
+    if (type === 'earnings') {
+      body.ticker = document.getElementById('formTicker').value;
+      body.companyName = document.getElementById('formCompanyName').value;
+      body.epsEstimate = document.getElementById('formEpsEstimate').value;
+      body.epsPrevious = document.getElementById('formEpsPrevious').value;
+      body.revenueEstimate = document.getElementById('formRevEstimate').value;
+      body.revenuePrevious = document.getElementById('formRevPrevious').value;
+      if (!body.ticker) { alert('Ticker is required'); btn.disabled = false; btn.textContent = 'Add Event'; return; }
+    } else {
+      body.economicName = document.getElementById('formEcoName').value;
+      body.economicConsensus = document.getElementById('formEcoConsensus').value;
+      body.economicPrevious = document.getElementById('formEcoPrevious').value;
+      body.economicUnit = document.getElementById('formEcoUnit').value;
+      if (!body.economicName) { alert('Event name is required'); btn.disabled = false; btn.textContent = 'Add Event'; return; }
+    }
+
+    try {
+      const r = await fetch('/api/events', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+      if (!r.ok) throw new Error('Server error');
+      // clear form
+      document.getElementById('formTicker').value = '';
+      document.getElementById('formCompanyName').value = '';
+      document.getElementById('formEpsEstimate').value = '';
+      document.getElementById('formEpsPrevious').value = '';
+      document.getElementById('formRevEstimate').value = '';
+      document.getElementById('formRevPrevious').value = '';
+      document.getElementById('formEcoName').value = '';
+      document.getElementById('formEcoConsensus').value = '';
+      document.getElementById('formEcoPrevious').value = '';
+      document.getElementById('formNotes').value = '';
+      loadEvents();
+    } catch(e) {
+      alert('Failed to add event: ' + e.message);
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Add Event';
+  }
+
+  // ── DELETE ──
+  async function deleteEvent(id) {
+    if (!confirm('Delete this event?')) return;
+    await fetch(`/api/events/${id}`, { method: 'DELETE' });
+    loadEvents();
+    loadStats();
+  }
+
+  // ── ANALYZE ──
+  async function analyzeEvent(id) {
+    const card = document.getElementById(`card-${id}`);
+    const body = card.querySelector('.event-body');
+    const aSection = body.querySelector('.analysis-section');
+    aSection.innerHTML = `<div class="loading-indicator"><div class="spinner"></div> Claude is researching — this may take 20-30 seconds...</div>`;
+
+    try {
+      const r = await fetch(`/api/events/${id}/analyze`, { method: 'POST' });
+      if (!r.ok) {
+        const e = await r.json();
+        aSection.innerHTML = `<div class="analyze-prompt" style="color:var(--red)">⚠️ ${e.error}</div>`;
+        return;
+      }
+      const d = await r.json();
+      // update local
+      const idx = events.findIndex(e => e.id === id);
+      if (idx !== -1) events[idx] = d.event;
+      renderEvents();
+      // re-open the card
+      setTimeout(() => toggleCard(id), 50);
+    } catch(e) {
+      aSection.innerHTML = `<div class="analyze-prompt" style="color:var(--red)">⚠️ ${e.message}</div>`;
+    }
+  }
+
+  // ── RECORD RESULT ──
+  async function recordResult(id) {
+    const outcome = selectedOutcome[id];
+    if (!outcome) { alert('Select an outcome: Correct, Partial, or Incorrect'); return; }
+
+    const type = events.find(e => e.id === id)?.type;
+    const body = { resultOutcome: outcome };
+
+    if (type === 'earnings') {
+      body.actualEps = document.getElementById(`actualEps-${id}`)?.value || null;
+      body.actualRevenue = document.getElementById(`actualRev-${id}`)?.value || null;
+    } else {
+      body.actualEconomic = document.getElementById(`actualEco-${id}`)?.value || null;
+    }
+    body.resultNotes = document.getElementById(`resultNotes-${id}`)?.value || null;
+
+    try {
+      const r = await fetch(`/api/events/${id}/result`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+      if (!r.ok) throw new Error('Server error');
+      loadEvents();
+      loadStats();
+    } catch(e) {
+      alert('Failed: ' + e.message);
+    }
+  }
+
+  function selectOutcome(id, outcome) {
+    selectedOutcome[id] = outcome;
+    ['correct','partial','incorrect'].forEach(o => {
+      const btn = document.getElementById(`outcome-${o}-${id}`);
+      if (btn) btn.classList.toggle('selected', o === outcome);
+    });
+  }
+
+  // ── TOGGLE CARD ──
+  function toggleCard(id) {
+    const body = document.getElementById(`body-${id}`);
+    if (body) body.classList.toggle('open');
+  }
+
+  // ── RENDER ──
+  function renderEvents() {
+    const list = document.getElementById('eventList');
+
+    if (events.length === 0) {
+      list.innerHTML = `<div class="empty-state"><div class="icon">✦</div><p>No events yet. Add one using the form on the left.</p></div>`;
+      return;
+    }
+
+    list.innerHTML = events.map(ev => renderCard(ev)).join('');
+  }
+
+  function renderCard(ev) {
+    const isEarnings = ev.type === 'earnings';
+    const name = isEarnings ? `${ev.ticker}${ev.companyName ? ' — ' + ev.companyName : ''}` : ev.economicName;
+    const dateStr = new Date(ev.eventDate + 'T12:00:00').toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+    const now = new Date();
+    const evDate = new Date(ev.eventDate + 'T12:00:00');
+    const isPast = evDate < now;
+
+    const cardClass = ev.status === 'resulted'
+      ? `event-card resulted-${ev.resultOutcome}`
+      : 'event-card';
+
+    const statusClass = ev.status === 'resulted'
+      ? (ev.resultOutcome === 'correct' ? 'status-resulted' : ev.resultOutcome === 'incorrect' ? 'status-resulted wrong' : 'status-resulted')
+      : `status-${ev.status}`;
+
+    const statusLabel = ev.status === 'resulted'
+      ? (ev.resultOutcome === 'correct' ? '✓ Correct' : ev.resultOutcome === 'incorrect' ? '✗ Incorrect' : '~ Partial')
+      : ev.status;
+
+    return `
+    <div class="${cardClass}" id="card-${ev.id}">
+      <div class="event-header" onclick="toggleCard('${ev.id}')">
+        <div class="event-meta">
+          <span class="event-type-badge ${isEarnings ? 'badge-earnings' : 'badge-economic'}">${isEarnings ? 'Earnings' : 'Economic'}</span>
+          <div>
+            <div class="event-name">${name}</div>
+            <div class="event-date">${dateStr} · ${ev.eventTime} ET${isPast ? ' · Past' : ''}</div>
+          </div>
+        </div>
+        <div class="event-actions">
+          <span class="status-badge ${statusClass}">${statusLabel}</span>
+          <button class="btn btn-sm btn-danger" onclick="event.stopPropagation();deleteEvent('${ev.id}')">✕</button>
+        </div>
+      </div>
+
+      <div class="event-body" id="body-${ev.id}">
+        ${renderInputRow(ev)}
+        ${renderAnalysis(ev)}
+        ${renderResultSection(ev, isPast)}
+      </div>
+    </div>`;
+  }
+
+  function renderInputRow(ev) {
+    if (ev.type === 'earnings') {
+      return `<div class="input-row">
+        <div class="input-item"><div class="label">EPS Estimate</div><div class="value">${ev.epsEstimate ? '$'+ev.epsEstimate : '—'}</div></div>
+        <div class="input-item"><div class="label">EPS Previous</div><div class="value">${ev.epsPrevious ? '$'+ev.epsPrevious : '—'}</div></div>
+        <div class="input-item"><div class="label">Rev Estimate</div><div class="value">${ev.revenueEstimate ? '$'+ev.revenueEstimate+'B' : '—'}</div></div>
+        <div class="input-item"><div class="label">Rev Previous</div><div class="value">${ev.revenuePrevious ? '$'+ev.revenuePrevious+'B' : '—'}</div></div>
+        ${ev.notes ? `<div class="input-item" style="grid-column:span 4"><div class="label">Notes</div><div class="value" style="font-size:0.75rem;font-family:var(--sans)">${ev.notes}</div></div>` : ''}
+      </div>`;
+    } else {
+      return `<div class="input-row">
+        <div class="input-item"><div class="label">Consensus</div><div class="value">${ev.economicConsensus || '—'}${ev.economicUnit}</div></div>
+        <div class="input-item"><div class="label">Previous</div><div class="value">${ev.economicPrevious || '—'}${ev.economicUnit}</div></div>
+        ${ev.notes ? `<div class="input-item" style="grid-column:span 2"><div class="label">Notes</div><div class="value" style="font-size:0.75rem;font-family:var(--sans)">${ev.notes}</div></div>` : ''}
+      </div>`;
+    }
+  }
+
+  function renderAnalysis(ev) {
+    const a = ev.analysis;
+    if (!a) {
+      return `<div class="analysis-section">
+        <div class="analyze-prompt">
+          <span style="font-size:1.1rem">✦</span>
+          <span>No AI analysis yet. Click Analyze to get Claude's forecast and trade suggestion.</span>
+          <button class="btn btn-sm btn-primary" style="margin-left:auto;white-space:nowrap" onclick="analyzeEvent('${ev.id}')">✦ Analyze</button>
+        </div>
+      </div>`;
+    }
+
+    const isEarnings = ev.type === 'earnings';
+
+    if (isEarnings) {
+      const trade = a.trade || {};
+      const mc = a.marketConsensusEstimate || {};
+      const mf = a.myForecast || {};
+      const em = a.expectedMove || {};
+      const ps = a.proxySignals || {};
+      const risks = a.keyRisks || [];
+
+      const dirClass = trade.direction === 'BUY' ? 'up' : trade.direction === 'SHORT' ? 'down' : 'neutral';
+
+      return `<div class="analysis-section">
+        <div class="section-divider">AI Analysis</div>
+
+        <div class="ai-grid">
+          <div class="ai-card">
+            <div class="ai-card-label">Market Priced In (EPS)</div>
+            <div class="ai-card-value ${mc.direction === 'ABOVE_ANALYST' ? 'up' : mc.direction === 'BELOW_ANALYST' ? 'down' : 'neutral'}">${mc.eps || '—'}</div>
+            <div class="ai-card-sub">${mc.direction || ''} analyst consensus</div>
+          </div>
+          <div class="ai-card">
+            <div class="ai-card-label">My EPS Forecast</div>
+            <div class="ai-card-value">${mf.eps || '—'}</div>
+            <div class="ai-card-sub">Rev: ${mf.revenue || '—'}</div>
+          </div>
+          <div class="ai-card">
+            <div class="ai-card-label">Expected Move</div>
+            <div class="ai-card-value ${em.direction === 'UP' ? 'up' : em.direction === 'DOWN' ? 'down' : 'neutral'}">${em.percent || '—'} ${em.direction || ''}</div>
+            <div class="ai-card-sub">${em.rationale || ''}</div>
+          </div>
+          <div class="ai-card">
+            <div class="ai-card-label">Market Rationale</div>
+            <div class="ai-card-sub" style="margin-top:0">${mc.rationale || '—'}</div>
+          </div>
+        </div>
+
+        <div class="section-divider">Trade Setup</div>
+
+        <div class="trade-box">
+          <div class="trade-dir ${trade.direction || 'NO_TRADE'}">${trade.direction || '—'}</div>
+          <div class="trade-level"><div class="trade-level-label">Entry</div><div class="trade-level-value entry">${trade.entry || '—'}</div></div>
+          <div class="trade-level"><div class="trade-level-label">Take Profit</div><div class="trade-level-value tp">${trade.tp || '—'}</div></div>
+          <div class="trade-level"><div class="trade-level-label">Stop Loss</div><div class="trade-level-value sl">${trade.sl || '—'}</div></div>
+        </div>
+
+        <div class="rationale-text">${trade.rationale || ''}</div>
+
+        <div class="confidence-bar-wrap">
+          <div class="confidence-bar-label"><span>Confidence vs Market</span><span>${a.confidenceScore || 0}%</span></div>
+          <div class="confidence-bar"><div class="confidence-fill" style="width:${a.confidenceScore || 0}%"></div></div>
+        </div>
+
+        ${ps && Object.keys(ps).length ? `
+        <div class="section-divider">Proxy Signals</div>
+        <div class="signals-grid">
+          ${ps.analystRevisions ? `<div class="signal-item"><div class="sig-label">Analyst Revisions</div>${ps.analystRevisions}</div>` : ''}
+          ${ps.stockDrift ? `<div class="signal-item"><div class="sig-label">Stock Drift</div>${ps.stockDrift}</div>` : ''}
+          ${ps.optionsSentiment ? `<div class="signal-item"><div class="sig-label">Options Sentiment</div>${ps.optionsSentiment}</div>` : ''}
+          ${ps.shortInterest ? `<div class="signal-item"><div class="sig-label">Short Interest</div>${ps.shortInterest}</div>` : ''}
+        </div>` : ''}
+
+        ${risks.length ? `<div class="risks">${risks.map(r => `<span class="risk-tag">⚠ ${r}</span>`).join('')}</div>` : ''}
+
+        <button class="btn btn-sm btn-ghost" onclick="analyzeEvent('${ev.id}')" style="margin-top:8px">↻ Re-analyze</button>
+      </div>`;
+    } else {
+      // ECONOMIC
+      const trade = a.trade || {};
+      const risks = a.keyRisks || [];
+
+      return `<div class="analysis-section">
+        <div class="section-divider">AI Analysis</div>
+
+        <div class="ai-grid">
+          <div class="ai-card">
+            <div class="ai-card-label">Bot Forecast</div>
+            <div class="ai-card-value">${a.forecast || '—'}</div>
+            <div class="ai-card-sub">${a.forecastRationale || ''}</div>
+          </div>
+          <div class="ai-card">
+            <div class="ai-card-label">Market Priced In</div>
+            <div class="ai-card-value neutral">${a.marketPricedIn || '—'}</div>
+            <div class="ai-card-sub">${a.marketPricedRationale || ''}</div>
+          </div>
+        </div>
+
+        ${a.beatMissScenario ? `<div class="ai-grid">
+          <div class="ai-card"><div class="ai-card-label">🟢 If Beat</div><div class="ai-card-sub" style="margin-top:0;color:var(--green)">${a.beatMissScenario.beat}</div></div>
+          <div class="ai-card"><div class="ai-card-label">🔴 If Miss</div><div class="ai-card-sub" style="margin-top:0;color:var(--red)">${a.beatMissScenario.miss}</div></div>
+        </div>` : ''}
+
+        <div class="section-divider">Trade Setup</div>
+
+        <div class="trade-box">
+          <div class="trade-dir ${trade.direction || 'NO_TRADE'}">${trade.direction || '—'}</div>
+          <div class="trade-level"><div class="trade-level-label">Entry</div><div class="trade-level-value entry">${trade.entry || '—'}</div></div>
+          <div class="trade-level"><div class="trade-level-label">Take Profit</div><div class="trade-level-value tp">${trade.tp || '—'}</div></div>
+          <div class="trade-level"><div class="trade-level-label">Stop Loss</div><div class="trade-level-value sl">${trade.sl || '—'}</div></div>
+        </div>
+
+        <div class="rationale-text">${trade.rationale || ''}</div>
+
+        <div class="confidence-bar-wrap">
+          <div class="confidence-bar-label"><span>Confidence Score</span><span>${a.confidenceScore || 0}%</span></div>
+          <div class="confidence-bar"><div class="confidence-fill" style="width:${a.confidenceScore || 0}%"></div></div>
+        </div>
+
+        ${risks.length ? `<div class="risks">${risks.map(r => `<span class="risk-tag">⚠ ${r}</span>`).join('')}</div>` : ''}
+
+        <button class="btn btn-sm btn-ghost" onclick="analyzeEvent('${ev.id}')" style="margin-top:8px">↻ Re-analyze</button>
+      </div>`;
+    }
+  }
+
+  function renderResultSection(ev, isPast) {
+    if (ev.status === 'resulted') {
+      const isEarnings = ev.type === 'earnings';
+      return `<div class="result-section">
+        <div class="result-section-title">Result</div>
+        <div class="result-display">
+          <span class="result-outcome-badge ${ev.resultOutcome}">${ev.resultOutcome === 'correct' ? '✓ Correct' : ev.resultOutcome === 'incorrect' ? '✗ Incorrect' : '~ Partial'}</span>
+          ${isEarnings && ev.actualEps ? `<span style="font-family:var(--mono);font-size:0.78rem">Actual EPS: <b>$${ev.actualEps}</b></span>` : ''}
+          ${isEarnings && ev.actualRevenue ? `<span style="font-family:var(--mono);font-size:0.78rem">Actual Rev: <b>$${ev.actualRevenue}B</b></span>` : ''}
+          ${!isEarnings && ev.actualEconomic ? `<span style="font-family:var(--mono);font-size:0.78rem">Actual: <b>${ev.actualEconomic}</b></span>` : ''}
+          ${ev.resultNotes ? `<span style="font-size:0.72rem;color:var(--muted)">${ev.resultNotes}</span>` : ''}
+          <button class="btn btn-sm btn-ghost" style="margin-left:auto" onclick="resetResult('${ev.id}')">Edit Result</button>
+        </div>
+      </div>`;
+    }
+
+    const isEarnings = ev.type === 'earnings';
+    const analyzed = ev.status === 'analyzed';
+
+    if (!analyzed && !isPast) return '';
+
+    return `<div class="result-section">
+      <div class="result-section-title">Record Result</div>
+      <div style="display:grid;grid-template-columns:${isEarnings ? '1fr 1fr' : '1fr'} 1fr;gap:8px;margin-bottom:12px">
+        ${isEarnings ? `
+          <div class="form-group" style="margin:0"><label>Actual EPS ($)</label><input type="number" id="actualEps-${ev.id}" placeholder="e.g. 2.41" step="0.01" /></div>
+          <div class="form-group" style="margin:0"><label>Actual Revenue ($B)</label><input type="number" id="actualRev-${ev.id}" placeholder="e.g. 126.1" step="0.1" /></div>
+        ` : `
+          <div class="form-group" style="margin:0"><label>Actual Result</label><input type="text" id="actualEco-${ev.id}" placeholder="e.g. 210K" /></div>
+        `}
+        <div class="form-group" style="margin:0"><label>Notes</label><input type="text" id="resultNotes-${ev.id}" placeholder="What happened..." /></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <span style="font-size:0.68rem;color:var(--muted);font-weight:700;letter-spacing:0.08em;text-transform:uppercase">Was the trade call:</span>
+        <button id="outcome-correct-${ev.id}" class="outcome-btn correct" onclick="selectOutcome('${ev.id}','correct')">✓ Correct</button>
+        <button id="outcome-partial-${ev.id}" class="outcome-btn partial" onclick="selectOutcome('${ev.id}','partial')">~ Partial</button>
+        <button id="outcome-incorrect-${ev.id}" class="outcome-btn incorrect" onclick="selectOutcome('${ev.id}','incorrect')">✗ Incorrect</button>
+        <button class="btn btn-sm btn-primary" style="margin-left:auto" onclick="recordResult('${ev.id}')">Save Result</button>
+      </div>
+    </div>`;
+  }
+
+  async function resetResult(id) {
+    if (!confirm('Clear the recorded result?')) return;
+    const r = await fetch(`/api/events/${id}/result`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ resultOutcome: null, actualEps: null, actualRevenue: null, actualEconomic: null })
+    });
+    // Update status back to analyzed if it had analysis
+    const d = await r.json();
+    // re-fetch to get proper status
+    loadEvents();
+    loadStats();
+  }
+
+  init();
+</script>
+</body>
 </html>

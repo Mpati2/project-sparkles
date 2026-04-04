@@ -1,0 +1,72 @@
+{
+  "events": [
+    {
+      "id": "evt_1775332185761_9yqy3",
+      "type": "earnings",
+      "eventDate": "2026-04-04",
+      "eventTime": "08:30",
+      "status": "analyzed",
+      "createdAt": "2026-04-04T19:49:45.763Z",
+      "ticker": "STZ",
+      "companyName": "Constellation Brands A",
+      "epsEstimate": "1.68",
+      "epsPrevious": "2.29",
+      "revenueEstimate": "1.84",
+      "revenuePrevious": null,
+      "economicName": null,
+      "economicConsensus": null,
+      "economicPrevious": null,
+      "economicUnit": "",
+      "notes": "",
+      "analysis": {
+        "analystConsensus": {
+          "eps": "$1.68",
+          "revenue": "$1.84B"
+        },
+        "marketConsensusEstimate": {
+          "eps": "$1.55-$1.65",
+          "revenue": "$1.78B-$1.82B",
+          "direction": "BELOW_ANALYST",
+          "rationale": "Stock has been under pressure with recent downgrades and margin concerns. Options put/call ratio of 0.69 shows bullish bias but short interest increased 26.9%. Recent earnings beat suggests market may be overly pessimistic."
+        },
+        "proxySignals": {
+          "analystRevisions": "Mixed - Citigroup upgraded to Buy on March 18, RBC maintained Outperform, but Piper Sandler downgraded to Neutral with $135 target. Recent downgrades citing Hispanic consumer softness",
+          "stockDrift": "Down 17.4% over 12 months, -0.68% in last 30 days, trading at $152. Stock at 52-week low was $126.45 in November, recovered but still well below $196.91 high",
+          "optionsSentiment": "Put/call ratio 0.69 indicates bullish sentiment. Historical data shows elevated put activity in some periods but current levels favor calls",
+          "shortInterest": "Short interest at 7.5M shares (5.4% of float), up 26.9% over 12 months but down 2.8% recently. Days to cover at 4.8 days"
+        },
+        "myForecast": {
+          "eps": "$1.72",
+          "revenue": "$1.86B",
+          "rationale": "Company has beaten 3 of last 4 quarters and recent Q3 beat by 15.9%. Beer margins remain strong at 38% and management cost initiatives should support margins despite revenue headwinds."
+        },
+        "expectedMove": {
+          "percent": "±6.8%",
+          "direction": "UP",
+          "rationale": "Historical earnings moves average 5-7%. Beat potential with low expectations and oversold conditions suggest upside bias despite margin concerns."
+        },
+        "trade": {
+          "direction": "BUY",
+          "asset": "STZ CFD",
+          "entry": "$152.00",
+          "tp": "$162.00",
+          "sl": "$147.00",
+          "rationale": "Risk/reward favors upside with earnings beat potential and stock trading near recent lows. Strong beer portfolio provides defensive characteristics."
+        },
+        "confidenceScore": 72,
+        "keyRisks": [
+          "Hispanic consumer weakness continues",
+          "Margin pressure from cost inflation",
+          "Tariff headwinds on Mexican imports"
+        ]
+      },
+      "actualEps": null,
+      "actualRevenue": null,
+      "actualEconomic": null,
+      "resultOutcome": null,
+      "resultNotes": null,
+      "resultedAt": null,
+      "analyzedAt": "2026-04-04T19:50:45.033Z"
+    }
+  ]
+}
