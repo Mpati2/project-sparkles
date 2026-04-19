@@ -6,6 +6,7 @@
 <title>Project Sparkles</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   :root {
     --bg: #0a0a0f;
@@ -33,7 +34,6 @@
     overflow-x: hidden;
   }
 
-  /* NOISE OVERLAY */
   body::before {
     content: '';
     position: fixed;
@@ -44,7 +44,6 @@
     opacity: 0.4;
   }
 
-  /* HEADER */
   .header {
     display: flex;
     align-items: center;
@@ -70,24 +69,13 @@
 
   .logo span { font-family: var(--mono); font-size: 0.8rem; color: var(--muted); -webkit-text-fill-color: var(--muted); }
 
-  .status-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--red);
-    display: inline-block; margin-right: 8px;
-    animation: pulse 2s infinite;
-  }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); display: inline-block; margin-right: 8px; animation: pulse 2s infinite; }
   .status-dot.ok { background: var(--green); }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
   .header-right { display: flex; align-items: center; gap: 16px; font-family: var(--mono); font-size: 0.72rem; color: var(--muted); }
 
-  /* NAV TABS */
-  .nav {
-    display: flex;
-    gap: 2px;
-    padding: 20px 32px 0;
-    border-bottom: 1px solid var(--border);
-  }
+  .nav { display: flex; gap: 2px; padding: 20px 32px 0; border-bottom: 1px solid var(--border); background: var(--surface); }
 
   .tab-btn {
     padding: 10px 24px;
@@ -107,45 +95,20 @@
   .tab-btn:hover { color: var(--text); }
   .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
 
-  /* STATS BAR */
-  .stats-bar {
-    display: flex;
-    gap: 1px;
-    padding: 16px 32px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .stat-item {
-    flex: 1;
-    text-align: center;
-    padding: 12px;
-    border-radius: 6px;
-  }
-
-  .stat-value {
-    font-family: var(--mono);
-    font-size: 1.6rem;
-    font-weight: 700;
-    line-height: 1;
-  }
-
+  .stats-bar { display: flex; gap: 1px; padding: 16px 32px; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .stat-item { flex: 1; text-align: center; padding: 12px; border-radius: 6px; }
+  .stat-value { font-family: var(--mono); font-size: 1.6rem; font-weight: 700; line-height: 1; }
   .stat-label { font-size: 0.68rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 4px; }
-
   .stat-item.wins .stat-value { color: var(--green); }
   .stat-item.losses .stat-value { color: var(--red); }
   .stat-item.partial .stat-value { color: var(--amber); }
   .stat-item.rate .stat-value { color: var(--accent); }
 
-  /* MAIN LAYOUT */
-  .main {
-    display: grid;
-    grid-template-columns: 320px 1fr;
-    gap: 0;
-    min-height: calc(100vh - 130px);
-  }
+  .page { display: none; }
+  .page.active { display: block; }
 
-  /* SIDEBAR (Add Event) */
+  .main { display: grid; grid-template-columns: 320px 1fr; gap: 0; min-height: calc(100vh - 130px); }
+
   .sidebar {
     border-right: 1px solid var(--border);
     padding: 24px;
@@ -156,26 +119,11 @@
     overflow-y: auto;
   }
 
-  .sidebar-title {
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 20px;
-  }
+  .sidebar-title { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 20px; }
 
   .form-group { margin-bottom: 14px; }
 
-  label {
-    display: block;
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 6px;
-  }
+  label { display: block; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
 
   input, select, textarea {
     width: 100%;
@@ -194,228 +142,72 @@
   select option { background: var(--surface2); }
   textarea { resize: vertical; min-height: 60px; }
 
-  .btn {
-    width: 100%;
-    padding: 12px;
-    font-family: var(--sans);
-    font-weight: 700;
-    font-size: 0.8rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .btn-primary {
-    background: linear-gradient(135deg, var(--accent), #5a3fd8);
-    color: #fff;
-  }
+  .btn { width: 100%; padding: 12px; font-family: var(--sans); font-weight: 700; font-size: 0.8rem; letter-spacing: 0.06em; text-transform: uppercase; border: none; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+  .btn-primary { background: linear-gradient(135deg, var(--accent), #5a3fd8); color: #fff; }
   .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(124,92,252,0.4); }
-  .btn-primary:active { transform: none; }
   .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
-
-  .btn-sm {
-    width: auto;
-    padding: 6px 14px;
-    font-size: 0.68rem;
-  }
-
-  .btn-ghost {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--muted);
-  }
+  .btn-sm { width: auto; padding: 6px 14px; font-size: 0.68rem; }
+  .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); }
   .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
-
-  .btn-danger {
-    background: transparent;
-    border: 1px solid transparent;
-    color: var(--red);
-  }
+  .btn-danger { background: transparent; border: 1px solid transparent; color: var(--red); }
   .btn-danger:hover { border-color: var(--red); background: rgba(252,92,92,0.08); }
 
   .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
 
-  /* EVENT LIST */
   .event-list { padding: 24px 32px; }
+  .list-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .list-title { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+  .event-count { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); background: var(--surface2); padding: 2px 8px; border-radius: 20px; }
 
-  .list-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
-  }
-
-  .list-title {
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-
-  .event-count {
-    font-family: var(--mono);
-    font-size: 0.7rem;
-    color: var(--muted);
-    background: var(--surface2);
-    padding: 2px 8px;
-    border-radius: 20px;
-  }
-
-  /* EVENT CARD */
-  .event-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    margin-bottom: 12px;
-    overflow: hidden;
-    transition: border-color 0.2s;
-    animation: slideIn 0.3s ease;
-  }
-
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
+  .event-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 12px; overflow: hidden; transition: border-color 0.2s; animation: slideIn 0.3s ease; }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
   .event-card:hover { border-color: #353550; }
   .event-card.resulted-correct { border-left: 3px solid var(--green); }
   .event-card.resulted-incorrect { border-left: 3px solid var(--red); }
   .event-card.resulted-partial { border-left: 3px solid var(--amber); }
 
-  .event-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 18px;
-    cursor: pointer;
-    user-select: none;
-  }
-
+  .event-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; cursor: pointer; user-select: none; }
   .event-header:hover { background: var(--surface2); }
-
   .event-meta { display: flex; align-items: center; gap: 12px; }
 
-  .event-type-badge {
-    font-family: var(--mono);
-    font-size: 0.6rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    padding: 3px 8px;
-    border-radius: 4px;
-  }
-
+  .event-type-badge { font-family: var(--mono); font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; }
   .badge-earnings { background: rgba(124,92,252,0.15); color: var(--accent); border: 1px solid rgba(124,92,252,0.3); }
   .badge-economic { background: rgba(45,204,143,0.1); color: var(--green); border: 1px solid rgba(45,204,143,0.2); }
 
   .event-name { font-weight: 700; font-size: 0.92rem; }
   .event-date { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); }
-
   .event-actions { display: flex; gap: 8px; align-items: center; }
 
-  .status-badge {
-    font-family: var(--mono);
-    font-size: 0.6rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    padding: 3px 8px;
-    border-radius: 4px;
-  }
-
+  .status-badge { font-family: var(--mono); font-size: 0.6rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; }
   .status-pending { background: rgba(107,107,138,0.15); color: var(--muted); }
   .status-analyzed { background: rgba(252,176,92,0.12); color: var(--amber); border: 1px solid rgba(252,176,92,0.25); }
   .status-resulted { background: rgba(45,204,143,0.1); color: var(--green); border: 1px solid rgba(45,204,143,0.2); }
   .status-resulted.wrong { background: rgba(252,92,92,0.08); color: var(--red); border: 1px solid rgba(252,92,92,0.2); }
 
-  /* EXPAND BODY */
   .event-body { display: none; border-top: 1px solid var(--border); }
   .event-body.open { display: block; }
 
-  /* INPUT ROW (consensus, previous etc) */
-  .input-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 12px;
-    padding: 16px 18px;
-    background: var(--surface2);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .input-item { }
+  .input-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; padding: 16px 18px; background: var(--surface2); border-bottom: 1px solid var(--border); }
   .input-item .label { font-size: 0.62rem; color: var(--muted); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
   .input-item .value { font-family: var(--mono); font-size: 0.85rem; margin-top: 2px; }
 
-  /* AI ANALYSIS */
   .analysis-section { padding: 18px; }
+  .analyze-prompt { display: flex; align-items: center; gap: 12px; padding: 14px; background: var(--bg); border: 1px dashed var(--border); border-radius: 8px; color: var(--muted); font-size: 0.8rem; margin-bottom: 12px; }
 
-  .analyze-prompt {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 14px;
-    background: var(--bg);
-    border: 1px dashed var(--border);
-    border-radius: 8px;
-    color: var(--muted);
-    font-size: 0.8rem;
-    margin-bottom: 12px;
-  }
-
-  .ai-result { }
-
-  .ai-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 14px;
-  }
-
-  .ai-card {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px 14px;
-  }
-
+  .ai-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+  .ai-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
   .ai-card-label { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
-
   .ai-card-value { font-family: var(--mono); font-size: 0.88rem; }
   .ai-card-value.up { color: var(--green); }
   .ai-card-value.down { color: var(--red); }
   .ai-card-value.neutral { color: var(--amber); }
-
   .ai-card-sub { font-size: 0.72rem; color: var(--muted); margin-top: 4px; line-height: 1.4; }
 
-  /* TRADE BOX */
-  .trade-box {
-    background: linear-gradient(135deg, rgba(124,92,252,0.08), rgba(252,92,124,0.05));
-    border: 1px solid rgba(124,92,252,0.25);
-    border-radius: 8px;
-    padding: 14px;
-    display: grid;
-    grid-template-columns: auto 1fr 1fr 1fr;
-    gap: 12px 20px;
-    align-items: center;
-    margin-bottom: 14px;
-  }
-
-  .trade-dir {
-    font-family: var(--mono);
-    font-size: 1rem;
-    font-weight: 700;
-    padding: 6px 14px;
-    border-radius: 6px;
-  }
-
+  .trade-box { background: linear-gradient(135deg, rgba(124,92,252,0.08), rgba(252,92,124,0.05)); border: 1px solid rgba(124,92,252,0.25); border-radius: 8px; padding: 14px; display: grid; grid-template-columns: auto 1fr 1fr 1fr; gap: 12px 20px; align-items: center; margin-bottom: 14px; }
+  .trade-dir { font-family: var(--mono); font-size: 1rem; font-weight: 700; padding: 6px 14px; border-radius: 6px; }
   .trade-dir.BUY { background: rgba(45,204,143,0.15); color: var(--green); border: 1px solid rgba(45,204,143,0.3); }
   .trade-dir.SHORT { background: rgba(252,92,92,0.12); color: var(--red); border: 1px solid rgba(252,92,92,0.25); }
   .trade-dir.NO_TRADE { background: rgba(107,107,138,0.15); color: var(--muted); border: 1px solid var(--border); }
-
   .trade-level { text-align: center; }
   .trade-level-label { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
   .trade-level-value { font-family: var(--mono); font-size: 0.92rem; margin-top: 2px; }
@@ -424,134 +216,114 @@
   .trade-level-value.sl { color: var(--red); }
 
   .rationale-text { font-size: 0.75rem; color: var(--muted); line-height: 1.5; padding: 10px 14px; background: var(--bg); border-radius: 6px; border: 1px solid var(--border); margin-bottom: 10px; }
-
   .confidence-bar-wrap { margin-bottom: 14px; }
   .confidence-bar-label { display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--muted); margin-bottom: 4px; font-family: var(--mono); }
   .confidence-bar { height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
   .confidence-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width 1s ease; }
 
-  /* PROXY SIGNALS */
   .signals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
   .signal-item { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; font-size: 0.72rem; }
   .signal-item .sig-label { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
 
-  /* RISKS */
   .risks { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
   .risk-tag { background: rgba(252,176,92,0.08); border: 1px solid rgba(252,176,92,0.2); color: var(--amber); font-size: 0.68rem; padding: 4px 10px; border-radius: 20px; }
 
-  /* RESULT SECTION */
-  .result-section {
-    border-top: 1px solid var(--border);
-    padding: 14px 18px;
-    background: var(--surface2);
-  }
-
+  .result-section { border-top: 1px solid var(--border); padding: 14px 18px; background: var(--surface2); }
   .result-section-title { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
-
-  .result-form { display: grid; grid-template-columns: 1fr 1fr 1fr auto auto; gap: 8px; align-items: end; }
-
-  .result-outcome-btns { display: flex; gap: 6px; }
-
-  .outcome-btn {
-    padding: 8px 14px;
-    font-family: var(--mono);
-    font-size: 0.68rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--muted);
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .outcome-btn.correct:hover, .outcome-btn.correct.selected { background: rgba(45,204,143,0.12); border-color: var(--green); color: var(--green); }
-  .outcome-btn.partial:hover, .outcome-btn.partial.selected { background: rgba(252,176,92,0.1); border-color: var(--amber); color: var(--amber); }
-  .outcome-btn.incorrect:hover, .outcome-btn.incorrect.selected { background: rgba(252,92,92,0.08); border-color: var(--red); color: var(--red); }
-
-  /* RESULTED DISPLAY */
   .result-display { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
   .result-outcome-badge { font-family: var(--mono); font-size: 0.72rem; font-weight: 700; padding: 4px 12px; border-radius: 4px; }
   .result-outcome-badge.correct { background: rgba(45,204,143,0.15); color: var(--green); }
   .result-outcome-badge.incorrect { background: rgba(252,92,92,0.1); color: var(--red); }
   .result-outcome-badge.partial { background: rgba(252,176,92,0.1); color: var(--amber); }
 
-  /* LOADING */
-  .loading-indicator {
-    display: flex; align-items: center; gap: 10px;
-    padding: 14px 18px;
-    font-family: var(--mono);
-    font-size: 0.75rem;
-    color: var(--accent);
-  }
+  .outcome-btn { padding: 8px 14px; font-family: var(--mono); font-size: 0.68rem; font-weight: 700; text-transform: uppercase; border: 1px solid var(--border); background: transparent; color: var(--muted); border-radius: 6px; cursor: pointer; transition: all 0.15s; }
+  .outcome-btn.correct:hover, .outcome-btn.correct.selected { background: rgba(45,204,143,0.12); border-color: var(--green); color: var(--green); }
+  .outcome-btn.partial:hover, .outcome-btn.partial.selected { background: rgba(252,176,92,0.1); border-color: var(--amber); color: var(--amber); }
+  .outcome-btn.incorrect:hover, .outcome-btn.incorrect.selected { background: rgba(252,92,92,0.08); border-color: var(--red); color: var(--red); }
 
-  .spinner {
-    width: 16px; height: 16px;
-    border: 2px solid rgba(124,92,252,0.2);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-
+  .loading-indicator { display: flex; align-items: center; gap: 10px; padding: 14px 18px; font-family: var(--mono); font-size: 0.75rem; color: var(--accent); }
+  .spinner { width: 16px; height: 16px; border: 2px solid rgba(124,92,252,0.2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* EMPTY STATE */
-  .empty-state {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    padding: 60px 20px;
-    color: var(--muted);
-    text-align: center;
-    gap: 12px;
-  }
-
+  .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; color: var(--muted); text-align: center; gap: 12px; }
   .empty-state .icon { font-size: 2.5rem; opacity: 0.3; }
   .empty-state p { font-size: 0.82rem; max-width: 260px; line-height: 1.5; }
 
-  /* SECTION TOGGLE */
   .type-fields { display: none; }
   .type-fields.active { display: block; }
+  .section-divider { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); padding-bottom: 6px; margin: 16px 0 12px; }
 
-  /* RESPONSIVE */
+  /* ── PORTFOLIO PAGE ── */
+  .portfolio-page { padding: 28px 32px; }
+
+  .portfolio-top { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+
+  .pf-stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; }
+  .pf-stat-label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .pf-stat-value { font-family: var(--mono); font-size: 1.5rem; font-weight: 700; }
+  .pf-stat-value.positive { color: var(--green); }
+  .pf-stat-value.negative { color: var(--red); }
+  .pf-stat-sub { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); margin-top: 4px; }
+
+  .chart-section { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 28px; }
+  .chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .chart-title { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .timeframe-btns { display: flex; gap: 4px; }
+  .tf-btn { padding: 5px 12px; font-family: var(--mono); font-size: 0.68rem; font-weight: 700; background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 4px; cursor: pointer; transition: all 0.15s; }
+  .tf-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .tf-btn.active { background: rgba(124,92,252,0.15); border-color: var(--accent); color: var(--accent); }
+
+  .chart-wrap { position: relative; height: 280px; }
+
+  .chart-legend { display: flex; gap: 20px; margin-top: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.7rem; color: var(--muted); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  .trade-log-section { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .trade-log-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+  .trade-log-title { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+
+  .add-trade-form { padding: 16px 20px; border-bottom: 1px solid var(--border); background: var(--surface2); display: none; }
+  .add-trade-form.open { display: block; }
+  .trade-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 12px; }
+
+  .trade-table { width: 100%; border-collapse: collapse; }
+  .trade-table th { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 10px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+  .trade-table td { padding: 12px 16px; font-family: var(--mono); font-size: 0.78rem; border-bottom: 1px solid rgba(37,37,53,0.5); }
+  .trade-table tr:last-child td { border-bottom: none; }
+  .trade-table tr:hover td { background: var(--surface2); }
+
+  .pnl-positive { color: var(--green); }
+  .pnl-negative { color: var(--red); }
+  .dir-badge { font-size: 0.62rem; font-weight: 700; padding: 2px 7px; border-radius: 3px; }
+  .dir-badge.BUY { background: rgba(45,204,143,0.12); color: var(--green); }
+  .dir-badge.SHORT { background: rgba(252,92,92,0.1); color: var(--red); }
+
   @media (max-width: 900px) {
     .main { grid-template-columns: 1fr; }
     .sidebar { position: static; height: auto; }
     .ai-grid { grid-template-columns: 1fr; }
     .trade-box { grid-template-columns: auto 1fr 1fr; }
-    .result-form { grid-template-columns: 1fr 1fr; }
+    .portfolio-top { grid-template-columns: 1fr 1fr; }
   }
-
-  .section-divider {
-    font-size: 0.62rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--muted);
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 6px;
-    margin: 16px 0 12px;
-  }
-
-  .prose-block { font-size: 0.74rem; color: var(--muted); line-height: 1.5; padding: 10px 12px; background: var(--bg); border-radius: 6px; border-left: 2px solid var(--accent); }
 </style>
 </head>
 <body>
 
 <header class="header">
-  <div class="logo">
-    Project Sparkles
-    <span>// Trading Economic Events</span>
-  </div>
+  <div class="logo">Project Sparkles <span>// Trading Economic Events</span></div>
   <div class="header-right">
     <span><span class="status-dot" id="apiDot"></span><span id="apiStatus">Checking...</span></span>
   </div>
 </header>
 
-<div style="display:flex; border-bottom: 1px solid var(--border); padding: 0 32px; background: var(--surface);">
+<div class="nav">
   <button class="tab-btn active" id="tabEarnings" onclick="switchTab('earnings')">📊 Earnings</button>
   <button class="tab-btn" id="tabEconomic" onclick="switchTab('economic')">📅 Economic</button>
+  <button class="tab-btn" id="tabPortfolio" onclick="switchTab('portfolio')">💹 Portfolio</button>
 </div>
 
-<!-- STATS BAR -->
+<!-- STATS BAR (shown on earnings/economic) -->
 <div class="stats-bar" id="statsBar">
   <div class="stat-item wins"><div class="stat-value" id="statCorrect">—</div><div class="stat-label">Correct</div></div>
   <div class="stat-item partial"><div class="stat-value" id="statPartial">—</div><div class="stat-label">Partial</div></div>
@@ -560,104 +332,165 @@
   <div class="stat-item"><div class="stat-value" id="statTotal">—</div><div class="stat-label">Total Tracked</div></div>
 </div>
 
-<div class="main">
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="sidebar-title">+ Add Event</div>
+<!-- EARNINGS / ECONOMIC PAGE -->
+<div class="page active" id="pageCalendar">
+  <div class="main">
+    <aside class="sidebar">
+      <div class="sidebar-title">+ Add Event</div>
+      <div class="form-group">
+        <label>Event Type</label>
+        <select id="formType" onchange="onTypeChange()">
+          <option value="earnings">Earnings</option>
+          <option value="economic">Economic</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Event Date</label><input type="date" id="formDate" /></div>
+      <div class="form-group"><label>Release Time (ET)</label><input type="time" id="formTime" value="08:30" /></div>
 
-    <div class="form-group">
-      <label>Event Type</label>
-      <select id="formType" onchange="onTypeChange()">
-        <option value="earnings">Earnings</option>
-        <option value="economic">Economic</option>
-      </select>
+      <div class="type-fields active" id="earningsFields">
+        <div class="form-group"><label>Ticker Symbol</label><input type="text" id="formTicker" placeholder="e.g. AAPL" style="text-transform:uppercase" /></div>
+        <div class="form-group"><label>Company Name <span style="color:var(--muted);font-weight:400">(optional)</span></label><input type="text" id="formCompanyName" placeholder="e.g. Apple Inc." /></div>
+        <div class="form-group"><label>EPS Estimate ($)</label><input type="number" id="formEpsEstimate" placeholder="e.g. 2.35" step="0.01" /></div>
+        <div class="form-group"><label>EPS Previous ($)</label><input type="number" id="formEpsPrevious" placeholder="e.g. 2.10" step="0.01" /></div>
+        <div class="form-group"><label>Revenue Estimate ($B)</label><input type="number" id="formRevEstimate" placeholder="e.g. 124.3" step="0.1" /></div>
+        <div class="form-group"><label>Revenue Previous ($B)</label><input type="number" id="formRevPrevious" placeholder="e.g. 119.6" step="0.1" /></div>
+      </div>
+
+      <div class="type-fields" id="economicFields">
+        <div class="form-group"><label>Event Name</label><input type="text" id="formEcoName" placeholder="e.g. Initial Jobless Claims" /></div>
+        <div class="form-group"><label>Consensus Forecast</label><input type="text" id="formEcoConsensus" placeholder="e.g. 215K or 0.3%" /></div>
+        <div class="form-group"><label>Previous Release</label><input type="text" id="formEcoPrevious" placeholder="e.g. 220K or 0.4%" /></div>
+        <div class="form-group"><label>Unit <span style="color:var(--muted);font-weight:400">(optional)</span></label><input type="text" id="formEcoUnit" placeholder="e.g. K, %, M" /></div>
+      </div>
+
+      <div class="form-group"><label>Notes <span style="color:var(--muted);font-weight:400">(optional)</span></label><textarea id="formNotes" placeholder="Any context or macro themes..."></textarea></div>
+      <button class="btn btn-primary" id="addBtn" onclick="addEvent()">Add Event</button>
+    </aside>
+
+    <main class="event-list">
+      <div class="list-header">
+        <span class="list-title" id="listTitle">Earnings Events</span>
+        <span class="event-count" id="eventCount">0 events</span>
+      </div>
+      <div id="eventList"></div>
+    </main>
+  </div>
+</div>
+
+<!-- PORTFOLIO PAGE -->
+<div class="page" id="pagePortfolio">
+  <div class="portfolio-page">
+
+    <div class="portfolio-top">
+      <div class="pf-stat">
+        <div class="pf-stat-label">Account Balance</div>
+        <div class="pf-stat-value" id="pfBalance">$10,000</div>
+        <div class="pf-stat-sub" id="pfBalanceSub">Starting: $10,000</div>
+      </div>
+      <div class="pf-stat">
+        <div class="pf-stat-label">Total P&L</div>
+        <div class="pf-stat-value" id="pfPnl">$0.00</div>
+        <div class="pf-stat-sub" id="pfPnlPct">0.00%</div>
+      </div>
+      <div class="pf-stat">
+        <div class="pf-stat-label">Total Trades</div>
+        <div class="pf-stat-value" id="pfTradeCount">0</div>
+        <div class="pf-stat-sub" id="pfWinRate">Win rate: —</div>
+      </div>
+      <div class="pf-stat">
+        <div class="pf-stat-label">vs S&P 500</div>
+        <div class="pf-stat-value" id="pfVsSP">—</div>
+        <div class="pf-stat-sub" id="pfVsSPSub">Over same period</div>
+      </div>
     </div>
 
-    <div class="form-group">
-      <label>Event Date</label>
-      <input type="date" id="formDate" />
-    </div>
-
-    <div class="form-group">
-      <label>Release Time (ET)</label>
-      <input type="time" id="formTime" value="08:30" />
-    </div>
-
-    <!-- EARNINGS FIELDS -->
-    <div class="type-fields active" id="earningsFields">
-      <div class="form-group">
-        <label>Ticker Symbol</label>
-        <input type="text" id="formTicker" placeholder="e.g. AAPL" style="text-transform:uppercase" />
+    <div class="chart-section">
+      <div class="chart-header">
+        <div class="chart-title">Portfolio Growth vs S&P 500</div>
+        <div style="display:flex;gap:12px;align-items:center">
+          <div class="timeframe-btns">
+            <button class="tf-btn" onclick="setTimeframe('5m')">5M</button>
+            <button class="tf-btn" onclick="setTimeframe('1h')">1H</button>
+            <button class="tf-btn active" onclick="setTimeframe('1d')">1D</button>
+            <button class="tf-btn" onclick="setTimeframe('1wk')">1W</button>
+          </div>
+        </div>
       </div>
-      <div class="form-group">
-        <label>Company Name <span style="color:var(--muted);font-weight:400">(optional)</span></label>
-        <input type="text" id="formCompanyName" placeholder="e.g. Apple Inc." />
+      <div class="chart-wrap">
+        <canvas id="growthChart"></canvas>
       </div>
-      <div class="form-group">
-        <label>EPS Estimate ($)</label>
-        <input type="number" id="formEpsEstimate" placeholder="e.g. 2.35" step="0.01" />
-      </div>
-      <div class="form-group">
-        <label>EPS Previous ($)</label>
-        <input type="number" id="formEpsPrevious" placeholder="e.g. 2.10" step="0.01" />
-      </div>
-      <div class="form-group">
-        <label>Revenue Estimate ($B)</label>
-        <input type="number" id="formRevEstimate" placeholder="e.g. 124.3" step="0.1" />
-      </div>
-      <div class="form-group">
-        <label>Revenue Previous ($B)</label>
-        <input type="number" id="formRevPrevious" placeholder="e.g. 119.6" step="0.1" />
+      <div class="chart-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div><span>My Portfolio</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div><span>S&P 500</span></div>
       </div>
     </div>
 
-    <!-- ECONOMIC FIELDS -->
-    <div class="type-fields" id="economicFields">
-      <div class="form-group">
-        <label>Event Name</label>
-        <input type="text" id="formEcoName" placeholder="e.g. Initial Jobless Claims" />
+    <div class="trade-log-section">
+      <div class="trade-log-header">
+        <span class="trade-log-title">Trade Log</span>
+        <button class="btn btn-sm btn-primary" onclick="toggleTradeForm()">+ Log Trade</button>
       </div>
-      <div class="form-group">
-        <label>Consensus Forecast</label>
-        <input type="text" id="formEcoConsensus" placeholder="e.g. 215K or 0.3%" />
+
+      <div class="add-trade-form" id="addTradeForm">
+        <div class="trade-form-grid">
+          <div class="form-group" style="margin:0"><label>Asset</label><input type="text" id="tfAsset" placeholder="e.g. EUR/USD" /></div>
+          <div class="form-group" style="margin:0">
+            <label>Direction</label>
+            <select id="tfDirection">
+              <option value="BUY">BUY</option>
+              <option value="SHORT">SHORT</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0"><label>Entry Price</label><input type="number" id="tfEntry" placeholder="e.g. 1.0850" step="0.0001" /></div>
+          <div class="form-group" style="margin:0"><label>Exit Price</label><input type="number" id="tfExit" placeholder="e.g. 1.0920" step="0.0001" /></div>
+          <div class="form-group" style="margin:0"><label>P&L ($)</label><input type="number" id="tfPnl" placeholder="e.g. 250 or -120" step="0.01" /></div>
+          <div class="form-group" style="margin:0"><label>Date</label><input type="date" id="tfDate" /></div>
+          <div class="form-group" style="margin:0"><label>Time</label><input type="time" id="tfTime" /></div>
+          <div class="form-group" style="margin:0"><label>Notes</label><input type="text" id="tfNotes" placeholder="Optional" /></div>
+        </div>
+        <button class="btn btn-primary" style="max-width:200px" onclick="logTrade()">Save Trade</button>
       </div>
-      <div class="form-group">
-        <label>Previous Release</label>
-        <input type="text" id="formEcoPrevious" placeholder="e.g. 220K or 0.4%" />
-      </div>
-      <div class="form-group">
-        <label>Unit <span style="color:var(--muted);font-weight:400">(optional)</span></label>
-        <input type="text" id="formEcoUnit" placeholder="e.g. K, %, M" />
+
+      <div id="tradeTableWrap">
+        <table class="trade-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Asset</th>
+              <th>Dir</th>
+              <th>Entry</th>
+              <th>Exit</th>
+              <th>P&L</th>
+              <th>Growth %</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tradeTableBody"></tbody>
+        </table>
+        <div id="tradeEmpty" class="empty-state" style="display:none">
+          <div class="icon">📈</div>
+          <p>No trades logged yet. Click "+ Log Trade" to add your first trade from MetaTrader.</p>
+        </div>
       </div>
     </div>
 
-    <div class="form-group">
-      <label>Notes <span style="color:var(--muted);font-weight:400">(optional)</span></label>
-      <textarea id="formNotes" placeholder="Any context, catalysts, or macro themes..."></textarea>
-    </div>
-
-    <button class="btn btn-primary" id="addBtn" onclick="addEvent()">Add Event</button>
-  </aside>
-
-  <!-- EVENT LIST -->
-  <main class="event-list">
-    <div class="list-header">
-      <span class="list-title" id="listTitle">Earnings Events</span>
-      <span class="event-count" id="eventCount">0 events</span>
-    </div>
-    <div id="eventList"></div>
-  </main>
+  </div>
 </div>
 
 <script>
   let currentTab = 'earnings';
   let events = [];
   let selectedOutcome = {};
+  let growthChart = null;
+  let currentTimeframe = '1d';
+  let portfolioData = { startingBalance: 10000, trades: [] };
 
   // ── INIT ──
   async function init() {
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('formDate').value = today;
+    document.getElementById('tfDate').value = today;
+    document.getElementById('tfTime').value = new Date().toTimeString().slice(0,5);
     checkStatus();
     loadStats();
     loadEvents();
@@ -669,25 +502,28 @@
       const s = await r.json();
       const dot = document.getElementById('apiDot');
       const label = document.getElementById('apiStatus');
-      if (s.claude) {
-        dot.classList.add('ok');
-        label.textContent = 'Claude connected';
-      } else {
-        label.textContent = 'Claude key missing';
-      }
-    } catch(e) {
-      document.getElementById('apiStatus').textContent = 'Server offline';
-    }
+      if (s.claude) { dot.classList.add('ok'); label.textContent = 'Claude connected'; }
+      else { label.textContent = 'Claude key missing'; }
+    } catch(e) { document.getElementById('apiStatus').textContent = 'Server offline'; }
   }
 
   function switchTab(tab) {
     currentTab = tab;
     document.getElementById('tabEarnings').classList.toggle('active', tab === 'earnings');
     document.getElementById('tabEconomic').classList.toggle('active', tab === 'economic');
-    document.getElementById('listTitle').textContent = tab === 'earnings' ? 'Earnings Events' : 'Economic Events';
-    document.getElementById('formType').value = tab;
-    onTypeChange();
-    loadEvents();
+    document.getElementById('tabPortfolio').classList.toggle('active', tab === 'portfolio');
+    document.getElementById('pageCalendar').classList.toggle('active', tab !== 'portfolio');
+    document.getElementById('pagePortfolio').classList.toggle('active', tab === 'portfolio');
+    document.getElementById('statsBar').style.display = tab === 'portfolio' ? 'none' : 'flex';
+
+    if (tab === 'portfolio') {
+      loadPortfolio();
+    } else {
+      document.getElementById('listTitle').textContent = tab === 'earnings' ? 'Earnings Events' : 'Economic Events';
+      document.getElementById('formType').value = tab;
+      onTypeChange();
+      loadEvents();
+    }
   }
 
   function onTypeChange() {
@@ -718,7 +554,7 @@
       renderEvents();
       document.getElementById('eventCount').textContent = `${events.length} event${events.length !== 1 ? 's' : ''}`;
     } catch(e) {
-      document.getElementById('eventList').innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><p>Could not connect to server. Is it running?</p></div>`;
+      document.getElementById('eventList').innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><p>Could not connect to server.</p></div>`;
     }
   }
 
@@ -726,15 +562,9 @@
   async function addEvent() {
     const type = document.getElementById('formType').value;
     const btn = document.getElementById('addBtn');
-    btn.disabled = true;
-    btn.textContent = 'Adding...';
+    btn.disabled = true; btn.textContent = 'Adding...';
 
-    const body = {
-      type,
-      eventDate: document.getElementById('formDate').value,
-      eventTime: document.getElementById('formTime').value,
-      notes: document.getElementById('formNotes').value,
-    };
+    const body = { type, eventDate: document.getElementById('formDate').value, eventTime: document.getElementById('formTime').value, notes: document.getElementById('formNotes').value };
 
     if (type === 'earnings') {
       body.ticker = document.getElementById('formTicker').value;
@@ -753,37 +583,20 @@
     }
 
     try {
-      const r = await fetch('/api/events', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
-      if (!r.ok) throw new Error('Server error');
-      // clear form
-      document.getElementById('formTicker').value = '';
-      document.getElementById('formCompanyName').value = '';
-      document.getElementById('formEpsEstimate').value = '';
-      document.getElementById('formEpsPrevious').value = '';
-      document.getElementById('formRevEstimate').value = '';
-      document.getElementById('formRevPrevious').value = '';
-      document.getElementById('formEcoName').value = '';
-      document.getElementById('formEcoConsensus').value = '';
-      document.getElementById('formEcoPrevious').value = '';
-      document.getElementById('formNotes').value = '';
+      await fetch('/api/events', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+      ['formTicker','formCompanyName','formEpsEstimate','formEpsPrevious','formRevEstimate','formRevPrevious','formEcoName','formEcoConsensus','formEcoPrevious','formNotes'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
       loadEvents();
-    } catch(e) {
-      alert('Failed to add event: ' + e.message);
-    }
+    } catch(e) { alert('Failed: ' + e.message); }
 
-    btn.disabled = false;
-    btn.textContent = 'Add Event';
+    btn.disabled = false; btn.textContent = 'Add Event';
   }
 
-  // ── DELETE ──
   async function deleteEvent(id) {
     if (!confirm('Delete this event?')) return;
     await fetch(`/api/events/${id}`, { method: 'DELETE' });
-    loadEvents();
-    loadStats();
+    loadEvents(); loadStats();
   }
 
-  // ── ANALYZE ──
   async function analyzeEvent(id) {
     const card = document.getElementById(`card-${id}`);
     const body = card.querySelector('.event-body');
@@ -792,72 +605,42 @@
 
     try {
       const r = await fetch(`/api/events/${id}/analyze`, { method: 'POST' });
-      if (!r.ok) {
-        const e = await r.json();
-        aSection.innerHTML = `<div class="analyze-prompt" style="color:var(--red)">⚠️ ${e.error}</div>`;
-        return;
-      }
+      if (!r.ok) { const e = await r.json(); aSection.innerHTML = `<div class="analyze-prompt" style="color:var(--red)">⚠️ ${e.error}</div>`; return; }
       const d = await r.json();
-      // update local
       const idx = events.findIndex(e => e.id === id);
       if (idx !== -1) events[idx] = d.event;
       renderEvents();
-      // re-open the card
       setTimeout(() => toggleCard(id), 50);
-    } catch(e) {
-      aSection.innerHTML = `<div class="analyze-prompt" style="color:var(--red)">⚠️ ${e.message}</div>`;
-    }
+    } catch(e) { aSection.innerHTML = `<div class="analyze-prompt" style="color:var(--red)">⚠️ ${e.message}</div>`; }
   }
 
-  // ── RECORD RESULT ──
   async function recordResult(id) {
     const outcome = selectedOutcome[id];
-    if (!outcome) { alert('Select an outcome: Correct, Partial, or Incorrect'); return; }
-
+    if (!outcome) { alert('Select an outcome first'); return; }
     const type = events.find(e => e.id === id)?.type;
     const body = { resultOutcome: outcome };
-
-    if (type === 'earnings') {
-      body.actualEps = document.getElementById(`actualEps-${id}`)?.value || null;
-      body.actualRevenue = document.getElementById(`actualRev-${id}`)?.value || null;
-    } else {
-      body.actualEconomic = document.getElementById(`actualEco-${id}`)?.value || null;
-    }
+    if (type === 'earnings') { body.actualEps = document.getElementById(`actualEps-${id}`)?.value || null; body.actualRevenue = document.getElementById(`actualRev-${id}`)?.value || null; }
+    else { body.actualEconomic = document.getElementById(`actualEco-${id}`)?.value || null; }
     body.resultNotes = document.getElementById(`resultNotes-${id}`)?.value || null;
-
     try {
-      const r = await fetch(`/api/events/${id}/result`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
-      if (!r.ok) throw new Error('Server error');
-      loadEvents();
-      loadStats();
-    } catch(e) {
-      alert('Failed: ' + e.message);
-    }
+      await fetch(`/api/events/${id}/result`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+      loadEvents(); loadStats();
+    } catch(e) { alert('Failed: ' + e.message); }
   }
 
   function selectOutcome(id, outcome) {
     selectedOutcome[id] = outcome;
-    ['correct','partial','incorrect'].forEach(o => {
-      const btn = document.getElementById(`outcome-${o}-${id}`);
-      if (btn) btn.classList.toggle('selected', o === outcome);
-    });
+    ['correct','partial','incorrect'].forEach(o => { const btn = document.getElementById(`outcome-${o}-${id}`); if (btn) btn.classList.toggle('selected', o === outcome); });
   }
 
-  // ── TOGGLE CARD ──
   function toggleCard(id) {
     const body = document.getElementById(`body-${id}`);
     if (body) body.classList.toggle('open');
   }
 
-  // ── RENDER ──
   function renderEvents() {
     const list = document.getElementById('eventList');
-
-    if (events.length === 0) {
-      list.innerHTML = `<div class="empty-state"><div class="icon">✦</div><p>No events yet. Add one using the form on the left.</p></div>`;
-      return;
-    }
-
+    if (events.length === 0) { list.innerHTML = `<div class="empty-state"><div class="icon">✦</div><p>No events yet. Add one using the form on the left.</p></div>`; return; }
     list.innerHTML = events.map(ev => renderCard(ev)).join('');
   }
 
@@ -865,38 +648,22 @@
     const isEarnings = ev.type === 'earnings';
     const name = isEarnings ? `${ev.ticker}${ev.companyName ? ' — ' + ev.companyName : ''}` : ev.economicName;
     const dateStr = new Date(ev.eventDate + 'T12:00:00').toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
-    const now = new Date();
-    const evDate = new Date(ev.eventDate + 'T12:00:00');
-    const isPast = evDate < now;
+    const isPast = new Date(ev.eventDate + 'T12:00:00') < new Date();
+    const cardClass = ev.status === 'resulted' ? `event-card resulted-${ev.resultOutcome}` : 'event-card';
+    const statusClass = ev.status === 'resulted' ? (ev.resultOutcome === 'correct' ? 'status-resulted' : ev.resultOutcome === 'incorrect' ? 'status-resulted wrong' : 'status-resulted') : `status-${ev.status}`;
+    const statusLabel = ev.status === 'resulted' ? (ev.resultOutcome === 'correct' ? '✓ Correct' : ev.resultOutcome === 'incorrect' ? '✗ Incorrect' : '~ Partial') : ev.status;
 
-    const cardClass = ev.status === 'resulted'
-      ? `event-card resulted-${ev.resultOutcome}`
-      : 'event-card';
-
-    const statusClass = ev.status === 'resulted'
-      ? (ev.resultOutcome === 'correct' ? 'status-resulted' : ev.resultOutcome === 'incorrect' ? 'status-resulted wrong' : 'status-resulted')
-      : `status-${ev.status}`;
-
-    const statusLabel = ev.status === 'resulted'
-      ? (ev.resultOutcome === 'correct' ? '✓ Correct' : ev.resultOutcome === 'incorrect' ? '✗ Incorrect' : '~ Partial')
-      : ev.status;
-
-    return `
-    <div class="${cardClass}" id="card-${ev.id}">
+    return `<div class="${cardClass}" id="card-${ev.id}">
       <div class="event-header" onclick="toggleCard('${ev.id}')">
         <div class="event-meta">
           <span class="event-type-badge ${isEarnings ? 'badge-earnings' : 'badge-economic'}">${isEarnings ? 'Earnings' : 'Economic'}</span>
-          <div>
-            <div class="event-name">${name}</div>
-            <div class="event-date">${dateStr} · ${ev.eventTime} ET${isPast ? ' · Past' : ''}</div>
-          </div>
+          <div><div class="event-name">${name}</div><div class="event-date">${dateStr} · ${ev.eventTime} ET${isPast ? ' · Past' : ''}</div></div>
         </div>
         <div class="event-actions">
           <span class="status-badge ${statusClass}">${statusLabel}</span>
           <button class="btn btn-sm btn-danger" onclick="event.stopPropagation();deleteEvent('${ev.id}')">✕</button>
         </div>
       </div>
-
       <div class="event-body" id="body-${ev.id}">
         ${renderInputRow(ev)}
         ${renderAnalysis(ev)}
@@ -925,126 +692,65 @@
 
   function renderAnalysis(ev) {
     const a = ev.analysis;
-    if (!a) {
-      return `<div class="analysis-section">
-        <div class="analyze-prompt">
-          <span style="font-size:1.1rem">✦</span>
-          <span>No AI analysis yet. Click Analyze to get Claude's forecast and trade suggestion.</span>
-          <button class="btn btn-sm btn-primary" style="margin-left:auto;white-space:nowrap" onclick="analyzeEvent('${ev.id}')">✦ Analyze</button>
-        </div>
-      </div>`;
-    }
+    if (!a) return `<div class="analysis-section"><div class="analyze-prompt"><span style="font-size:1.1rem">✦</span><span>No AI analysis yet.</span><button class="btn btn-sm btn-primary" style="margin-left:auto;white-space:nowrap" onclick="analyzeEvent('${ev.id}')">✦ Analyze</button></div></div>`;
 
     const isEarnings = ev.type === 'earnings';
-
     if (isEarnings) {
-      const trade = a.trade || {};
-      const mc = a.marketConsensusEstimate || {};
-      const mf = a.myForecast || {};
-      const em = a.expectedMove || {};
-      const ps = a.proxySignals || {};
-      const risks = a.keyRisks || [];
-
-      const dirClass = trade.direction === 'BUY' ? 'up' : trade.direction === 'SHORT' ? 'down' : 'neutral';
-
+      const trade = a.trade || {}; const mc = a.marketConsensusEstimate || {}; const mf = a.myForecast || {}; const em = a.expectedMove || {}; const ps = a.proxySignals || {}; const risks = a.keyRisks || [];
       return `<div class="analysis-section">
         <div class="section-divider">AI Analysis</div>
-
         <div class="ai-grid">
-          <div class="ai-card">
-            <div class="ai-card-label">Market Priced In (EPS)</div>
-            <div class="ai-card-value ${mc.direction === 'ABOVE_ANALYST' ? 'up' : mc.direction === 'BELOW_ANALYST' ? 'down' : 'neutral'}">${mc.eps || '—'}</div>
-            <div class="ai-card-sub">${mc.direction || ''} analyst consensus</div>
-          </div>
-          <div class="ai-card">
-            <div class="ai-card-label">My EPS Forecast</div>
-            <div class="ai-card-value">${mf.eps || '—'}</div>
-            <div class="ai-card-sub">Rev: ${mf.revenue || '—'}</div>
-          </div>
-          <div class="ai-card">
-            <div class="ai-card-label">Expected Move</div>
-            <div class="ai-card-value ${em.direction === 'UP' ? 'up' : em.direction === 'DOWN' ? 'down' : 'neutral'}">${em.percent || '—'} ${em.direction || ''}</div>
-            <div class="ai-card-sub">${em.rationale || ''}</div>
-          </div>
-          <div class="ai-card">
-            <div class="ai-card-label">Market Rationale</div>
-            <div class="ai-card-sub" style="margin-top:0">${mc.rationale || '—'}</div>
-          </div>
+          <div class="ai-card"><div class="ai-card-label">Market Priced In (EPS)</div><div class="ai-card-value ${mc.direction === 'ABOVE_ANALYST' ? 'up' : mc.direction === 'BELOW_ANALYST' ? 'down' : 'neutral'}">${mc.eps || '—'}</div><div class="ai-card-sub">${mc.direction || ''} analyst consensus</div></div>
+          <div class="ai-card"><div class="ai-card-label">My EPS Forecast</div><div class="ai-card-value">${mf.eps || '—'}</div><div class="ai-card-sub">Rev: ${mf.revenue || '—'}</div></div>
+          <div class="ai-card"><div class="ai-card-label">Expected Move</div><div class="ai-card-value ${em.direction === 'UP' ? 'up' : em.direction === 'DOWN' ? 'down' : 'neutral'}">${em.percent || '—'} ${em.direction || ''}</div><div class="ai-card-sub">${em.rationale || ''}</div></div>
+          <div class="ai-card"><div class="ai-card-label">Market Rationale</div><div class="ai-card-sub" style="margin-top:0">${mc.rationale || '—'}</div></div>
         </div>
-
         <div class="section-divider">Trade Setup</div>
-
         <div class="trade-box">
           <div class="trade-dir ${trade.direction || 'NO_TRADE'}">${trade.direction || '—'}</div>
           <div class="trade-level"><div class="trade-level-label">Entry</div><div class="trade-level-value entry">${trade.entry || '—'}</div></div>
           <div class="trade-level"><div class="trade-level-label">Take Profit</div><div class="trade-level-value tp">${trade.tp || '—'}</div></div>
           <div class="trade-level"><div class="trade-level-label">Stop Loss</div><div class="trade-level-value sl">${trade.sl || '—'}</div></div>
         </div>
-
         <div class="rationale-text">${trade.rationale || ''}</div>
-
         <div class="confidence-bar-wrap">
-          <div class="confidence-bar-label"><span>Confidence vs Market</span><span>${a.confidenceScore || 0}%</span></div>
+          <div class="confidence-bar-label"><span>Confidence</span><span>${a.confidenceScore || 0}%</span></div>
           <div class="confidence-bar"><div class="confidence-fill" style="width:${a.confidenceScore || 0}%"></div></div>
         </div>
-
-        ${ps && Object.keys(ps).length ? `
-        <div class="section-divider">Proxy Signals</div>
-        <div class="signals-grid">
+        ${ps && Object.keys(ps).length ? `<div class="section-divider">Proxy Signals</div><div class="signals-grid">
           ${ps.analystRevisions ? `<div class="signal-item"><div class="sig-label">Analyst Revisions</div>${ps.analystRevisions}</div>` : ''}
           ${ps.stockDrift ? `<div class="signal-item"><div class="sig-label">Stock Drift</div>${ps.stockDrift}</div>` : ''}
-          ${ps.optionsSentiment ? `<div class="signal-item"><div class="sig-label">Options Sentiment</div>${ps.optionsSentiment}</div>` : ''}
+          ${ps.optionsSentiment ? `<div class="signal-item"><div class="sig-label">Options</div>${ps.optionsSentiment}</div>` : ''}
           ${ps.shortInterest ? `<div class="signal-item"><div class="sig-label">Short Interest</div>${ps.shortInterest}</div>` : ''}
         </div>` : ''}
-
         ${risks.length ? `<div class="risks">${risks.map(r => `<span class="risk-tag">⚠ ${r}</span>`).join('')}</div>` : ''}
-
         <button class="btn btn-sm btn-ghost" onclick="analyzeEvent('${ev.id}')" style="margin-top:8px">↻ Re-analyze</button>
       </div>`;
     } else {
-      // ECONOMIC
-      const trade = a.trade || {};
-      const risks = a.keyRisks || [];
-
+      const trade = a.trade || {}; const risks = a.keyRisks || [];
       return `<div class="analysis-section">
         <div class="section-divider">AI Analysis</div>
-
         <div class="ai-grid">
-          <div class="ai-card">
-            <div class="ai-card-label">Bot Forecast</div>
-            <div class="ai-card-value">${a.forecast || '—'}</div>
-            <div class="ai-card-sub">${a.forecastRationale || ''}</div>
-          </div>
-          <div class="ai-card">
-            <div class="ai-card-label">Market Priced In</div>
-            <div class="ai-card-value neutral">${a.marketPricedIn || '—'}</div>
-            <div class="ai-card-sub">${a.marketPricedRationale || ''}</div>
-          </div>
+          <div class="ai-card"><div class="ai-card-label">Bot Forecast</div><div class="ai-card-value">${a.forecast || '—'}</div><div class="ai-card-sub">${a.forecastRationale || ''}</div></div>
+          <div class="ai-card"><div class="ai-card-label">Market Priced In</div><div class="ai-card-value neutral">${a.marketPricedIn || '—'}</div><div class="ai-card-sub">${a.marketPricedRationale || ''}</div></div>
         </div>
-
         ${a.beatMissScenario ? `<div class="ai-grid">
           <div class="ai-card"><div class="ai-card-label">🟢 If Beat</div><div class="ai-card-sub" style="margin-top:0;color:var(--green)">${a.beatMissScenario.beat}</div></div>
           <div class="ai-card"><div class="ai-card-label">🔴 If Miss</div><div class="ai-card-sub" style="margin-top:0;color:var(--red)">${a.beatMissScenario.miss}</div></div>
         </div>` : ''}
-
         <div class="section-divider">Trade Setup</div>
-
         <div class="trade-box">
           <div class="trade-dir ${trade.direction || 'NO_TRADE'}">${trade.direction || '—'}</div>
           <div class="trade-level"><div class="trade-level-label">Entry</div><div class="trade-level-value entry">${trade.entry || '—'}</div></div>
           <div class="trade-level"><div class="trade-level-label">Take Profit</div><div class="trade-level-value tp">${trade.tp || '—'}</div></div>
           <div class="trade-level"><div class="trade-level-label">Stop Loss</div><div class="trade-level-value sl">${trade.sl || '—'}</div></div>
         </div>
-
         <div class="rationale-text">${trade.rationale || ''}</div>
-
         <div class="confidence-bar-wrap">
-          <div class="confidence-bar-label"><span>Confidence Score</span><span>${a.confidenceScore || 0}%</span></div>
+          <div class="confidence-bar-label"><span>Confidence</span><span>${a.confidenceScore || 0}%</span></div>
           <div class="confidence-bar"><div class="confidence-fill" style="width:${a.confidenceScore || 0}%"></div></div>
         </div>
-
         ${risks.length ? `<div class="risks">${risks.map(r => `<span class="risk-tag">⚠ ${r}</span>`).join('')}</div>` : ''}
-
         <button class="btn btn-sm btn-ghost" onclick="analyzeEvent('${ev.id}')" style="margin-top:8px">↻ Re-analyze</button>
       </div>`;
     }
@@ -1057,53 +763,234 @@
         <div class="result-section-title">Result</div>
         <div class="result-display">
           <span class="result-outcome-badge ${ev.resultOutcome}">${ev.resultOutcome === 'correct' ? '✓ Correct' : ev.resultOutcome === 'incorrect' ? '✗ Incorrect' : '~ Partial'}</span>
-          ${isEarnings && ev.actualEps ? `<span style="font-family:var(--mono);font-size:0.78rem">Actual EPS: <b>$${ev.actualEps}</b></span>` : ''}
-          ${isEarnings && ev.actualRevenue ? `<span style="font-family:var(--mono);font-size:0.78rem">Actual Rev: <b>$${ev.actualRevenue}B</b></span>` : ''}
+          ${isEarnings && ev.actualEps ? `<span style="font-family:var(--mono);font-size:0.78rem">EPS: <b>$${ev.actualEps}</b></span>` : ''}
           ${!isEarnings && ev.actualEconomic ? `<span style="font-family:var(--mono);font-size:0.78rem">Actual: <b>${ev.actualEconomic}</b></span>` : ''}
           ${ev.resultNotes ? `<span style="font-size:0.72rem;color:var(--muted)">${ev.resultNotes}</span>` : ''}
-          <button class="btn btn-sm btn-ghost" style="margin-left:auto" onclick="resetResult('${ev.id}')">Edit Result</button>
+          <button class="btn btn-sm btn-ghost" style="margin-left:auto" onclick="resetResult('${ev.id}')">Edit</button>
         </div>
       </div>`;
     }
-
+    if (!ev.analysis && !isPast) return '';
     const isEarnings = ev.type === 'earnings';
-    const analyzed = ev.status === 'analyzed';
-
-    if (!analyzed && !isPast) return '';
-
     return `<div class="result-section">
       <div class="result-section-title">Record Result</div>
       <div style="display:grid;grid-template-columns:${isEarnings ? '1fr 1fr' : '1fr'} 1fr;gap:8px;margin-bottom:12px">
         ${isEarnings ? `
           <div class="form-group" style="margin:0"><label>Actual EPS ($)</label><input type="number" id="actualEps-${ev.id}" placeholder="e.g. 2.41" step="0.01" /></div>
           <div class="form-group" style="margin:0"><label>Actual Revenue ($B)</label><input type="number" id="actualRev-${ev.id}" placeholder="e.g. 126.1" step="0.1" /></div>
-        ` : `
-          <div class="form-group" style="margin:0"><label>Actual Result</label><input type="text" id="actualEco-${ev.id}" placeholder="e.g. 210K" /></div>
-        `}
+        ` : `<div class="form-group" style="margin:0"><label>Actual Result</label><input type="text" id="actualEco-${ev.id}" placeholder="e.g. 210K" /></div>`}
         <div class="form-group" style="margin:0"><label>Notes</label><input type="text" id="resultNotes-${ev.id}" placeholder="What happened..." /></div>
       </div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <span style="font-size:0.68rem;color:var(--muted);font-weight:700;letter-spacing:0.08em;text-transform:uppercase">Was the trade call:</span>
+        <span style="font-size:0.68rem;color:var(--muted);font-weight:700;letter-spacing:0.08em;text-transform:uppercase">Outcome:</span>
         <button id="outcome-correct-${ev.id}" class="outcome-btn correct" onclick="selectOutcome('${ev.id}','correct')">✓ Correct</button>
         <button id="outcome-partial-${ev.id}" class="outcome-btn partial" onclick="selectOutcome('${ev.id}','partial')">~ Partial</button>
         <button id="outcome-incorrect-${ev.id}" class="outcome-btn incorrect" onclick="selectOutcome('${ev.id}','incorrect')">✗ Incorrect</button>
-        <button class="btn btn-sm btn-primary" style="margin-left:auto" onclick="recordResult('${ev.id}')">Save Result</button>
+        <button class="btn btn-sm btn-primary" style="margin-left:auto" onclick="recordResult('${ev.id}')">Save</button>
       </div>
     </div>`;
   }
 
   async function resetResult(id) {
     if (!confirm('Clear the recorded result?')) return;
-    const r = await fetch(`/api/events/${id}/result`, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ resultOutcome: null, actualEps: null, actualRevenue: null, actualEconomic: null })
-    });
-    // Update status back to analyzed if it had analysis
-    const d = await r.json();
-    // re-fetch to get proper status
-    loadEvents();
-    loadStats();
+    await fetch(`/api/events/${id}/result`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ resultOutcome: null }) });
+    loadEvents(); loadStats();
+  }
+
+  // ── PORTFOLIO ──
+  async function loadPortfolio() {
+    try {
+      const r = await fetch('/api/portfolio');
+      portfolioData = await r.json();
+      renderPortfolioStats();
+      renderTradeTable();
+      loadChart(currentTimeframe);
+    } catch(e) { console.error('Portfolio load error:', e); }
+  }
+
+  function renderPortfolioStats() {
+    const { startingBalance, trades } = portfolioData;
+    const totalPnl = trades.reduce((sum, t) => sum + t.pnl, 0);
+    const currentBalance = startingBalance + totalPnl;
+    const pnlPct = ((totalPnl / startingBalance) * 100).toFixed(2);
+    const wins = trades.filter(t => t.pnl > 0).length;
+    const winRate = trades.length > 0 ? Math.round((wins / trades.length) * 100) : 0;
+
+    document.getElementById('pfBalance').textContent = '$' + currentBalance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('pfBalanceSub').textContent = `Starting: $${startingBalance.toLocaleString()}`;
+    document.getElementById('pfPnl').textContent = (totalPnl >= 0 ? '+$' : '-$') + Math.abs(totalPnl).toFixed(2);
+    document.getElementById('pfPnl').className = 'pf-stat-value ' + (totalPnl >= 0 ? 'positive' : 'negative');
+    document.getElementById('pfPnlPct').textContent = (totalPnl >= 0 ? '+' : '') + pnlPct + '%';
+    document.getElementById('pfTradeCount').textContent = trades.length;
+    document.getElementById('pfWinRate').textContent = `Win rate: ${winRate}%`;
+  }
+
+  function renderTradeTable() {
+    const { startingBalance, trades } = portfolioData;
+    const tbody = document.getElementById('tradeTableBody');
+    const empty = document.getElementById('tradeEmpty');
+
+    if (trades.length === 0) {
+      tbody.innerHTML = '';
+      empty.style.display = 'flex';
+      return;
+    }
+
+    empty.style.display = 'none';
+    let runningBalance = startingBalance;
+
+    tbody.innerHTML = [...trades].reverse().map(t => {
+      const pnlClass = t.pnl >= 0 ? 'pnl-positive' : 'pnl-negative';
+      const pnlSign = t.pnl >= 0 ? '+' : '';
+      const growthPct = ((t.pnl / startingBalance) * 100).toFixed(3);
+      const growthSign = t.pnl >= 0 ? '+' : '';
+      return `<tr>
+        <td>${t.tradeDate} ${t.tradeTime || ''}</td>
+        <td>${t.asset}</td>
+        <td><span class="dir-badge ${t.direction}">${t.direction}</span></td>
+        <td>${t.entryPrice || '—'}</td>
+        <td>${t.exitPrice || '—'}</td>
+        <td class="${pnlClass}">${pnlSign}$${Math.abs(t.pnl).toFixed(2)}</td>
+        <td class="${pnlClass}">${growthSign}${growthPct}%</td>
+        <td><button class="btn btn-sm btn-danger" onclick="deleteTrade('${t.id}')">✕</button></td>
+      </tr>`;
+    }).join('');
+  }
+
+  function toggleTradeForm() {
+    document.getElementById('addTradeForm').classList.toggle('open');
+  }
+
+  async function logTrade() {
+    const pnl = document.getElementById('tfPnl').value;
+    const asset = document.getElementById('tfAsset').value;
+    if (!asset || pnl === '') { alert('Asset and P&L are required'); return; }
+
+    const body = {
+      asset,
+      direction: document.getElementById('tfDirection').value,
+      entryPrice: document.getElementById('tfEntry').value || null,
+      exitPrice: document.getElementById('tfExit').value || null,
+      pnl: parseFloat(pnl),
+      tradeDate: document.getElementById('tfDate').value,
+      tradeTime: document.getElementById('tfTime').value,
+      notes: document.getElementById('tfNotes').value,
+    };
+
+    try {
+      await fetch('/api/portfolio/trades', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+      ['tfAsset','tfEntry','tfExit','tfPnl','tfNotes'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('addTradeForm').classList.remove('open');
+      loadPortfolio();
+    } catch(e) { alert('Failed: ' + e.message); }
+  }
+
+  async function deleteTrade(id) {
+    if (!confirm('Delete this trade?')) return;
+    await fetch(`/api/portfolio/trades/${id}`, { method: 'DELETE' });
+    loadPortfolio();
+  }
+
+  // ── CHART ──
+  async function setTimeframe(tf) {
+    currentTimeframe = tf;
+    document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    loadChart(tf);
+  }
+
+  async function loadChart(tf) {
+    try {
+      const r = await fetch(`/api/sp500?interval=${tf}`);
+      const spData = await r.json();
+
+      const spPoints = spData.points || [];
+      const { startingBalance, trades } = portfolioData;
+
+      // Build portfolio growth line from trades
+      const sortedTrades = [...trades].sort((a, b) => new Date(a.tradeDate + 'T' + (a.tradeTime||'00:00')) - new Date(b.tradeDate + 'T' + (b.tradeTime||'00:00')));
+      let cumulativePnl = 0;
+      const portfolioPoints = sortedTrades.map(t => {
+        cumulativePnl += t.pnl;
+        return { time: new Date(t.tradeDate + 'T' + (t.tradeTime||'12:00')).getTime(), pct: (cumulativePnl / startingBalance) * 100 };
+      });
+
+      // Update vs S&P stat
+      const spLatestPct = spPoints.length > 0 ? spPoints[spPoints.length - 1].pct : null;
+      const myLatestPct = portfolioPoints.length > 0 ? portfolioPoints[portfolioPoints.length - 1].pct : null;
+      if (spLatestPct !== null && myLatestPct !== null) {
+        const diff = myLatestPct - spLatestPct;
+        document.getElementById('pfVsSP').textContent = (diff >= 0 ? '+' : '') + diff.toFixed(2) + '%';
+        document.getElementById('pfVsSP').className = 'pf-stat-value ' + (diff >= 0 ? 'positive' : 'negative');
+        document.getElementById('pfVsSPSub').textContent = `S&P: ${spLatestPct.toFixed(2)}% | Me: ${myLatestPct !== null ? myLatestPct.toFixed(2) : '0.00'}%`;
+      }
+
+      const labels = spPoints.map(p => new Date(p.time).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }));
+
+      if (growthChart) growthChart.destroy();
+
+      const ctx = document.getElementById('growthChart').getContext('2d');
+      growthChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'S&P 500 %',
+              data: spPoints.map(p => parseFloat(p.pct.toFixed(3))),
+              borderColor: '#fcb05c',
+              backgroundColor: 'rgba(252,176,92,0.05)',
+              borderWidth: 1.5,
+              pointRadius: 0,
+              tension: 0.3,
+              fill: false,
+            },
+            {
+              label: 'My Portfolio %',
+              data: portfolioPoints.length > 0 ? (() => {
+                const result = new Array(spPoints.length).fill(null);
+                portfolioPoints.forEach(pp => {
+                  const idx = spPoints.findIndex(sp => sp.time >= pp.time);
+                  if (idx !== -1) result[idx] = parseFloat(pp.pct.toFixed(3));
+                });
+                return result;
+              })() : [],
+              borderColor: '#7c5cfc',
+              backgroundColor: 'rgba(124,92,252,0.08)',
+              borderWidth: 2,
+              pointRadius: 4,
+              pointBackgroundColor: '#7c5cfc',
+              tension: 0.3,
+              fill: false,
+              spanGaps: false,
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#1a1a24',
+              borderColor: '#252535',
+              borderWidth: 1,
+              titleColor: '#6b6b8a',
+              bodyColor: '#e8e8f0',
+              callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y !== null ? ctx.parsed.y.toFixed(3) + '%' : 'No trade'}` }
+            }
+          },
+          scales: {
+            x: { grid: { color: '#252535' }, ticks: { color: '#6b6b8a', font: { family: 'Space Mono', size: 10 }, maxTicksLimit: 8 } },
+            y: { grid: { color: '#252535' }, ticks: { color: '#6b6b8a', font: { family: 'Space Mono', size: 10 }, callback: v => v.toFixed(2) + '%' }, title: { display: true, text: 'Growth %', color: '#6b6b8a', font: { size: 10 } } }
+          }
+        }
+      });
+
+    } catch(e) {
+      console.error('Chart error:', e);
+    }
   }
 
   init();
