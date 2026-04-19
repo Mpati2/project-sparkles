@@ -316,6 +316,37 @@ app.get('/api/sp500', async (req, res) => {
   }
 });
 
+// ── CHAT ──
+app.post('/api/chat', async (req, res) => {
+  const { messages, systemPrompt } = req.body;
+  if (!messages) return res.status(400).json({ error: 'messages required' });
+  if (!CLAUDE_KEY) return res.status(500).json({ error: 'Claude key not set' });
+
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': CLAUDE_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 600,
+        system: systemPrompt || 'You are a helpful financial analyst assistant embedded in Project Sparkles.',
+        messages,
+      })
+    });
+
+    if (!r.ok) { const e = await r.json(); throw new Error(e.error?.message || 'Claude error'); }
+    const data = await r.json();
+    const reply = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
+    res.json({ reply });
+  } catch(err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`\n✦ Project Sparkles running at http://localhost:${PORT}`);
   console.log(`  Claude key: ${CLAUDE_KEY && CLAUDE_KEY !== 'your_anthropic_key_here' ? '✓ set' : '✗ missing — edit .env'}\n`);
