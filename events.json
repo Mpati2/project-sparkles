@@ -5,7 +5,7 @@
       "type": "earnings",
       "eventDate": "2026-04-04",
       "eventTime": "08:30",
-      "status": "analyzed",
+      "status": "resulted",
       "createdAt": "2026-04-04T19:49:45.763Z",
       "ticker": "STZ",
       "companyName": "Constellation Brands A",
@@ -60,13 +60,81 @@
           "Tariff headwinds on Mexican imports"
         ]
       },
+      "actualEps": "1.9",
+      "actualRevenue": "1.92",
+      "actualEconomic": null,
+      "resultOutcome": "incorrect",
+      "resultNotes": "Price went down form $155.54 to $150.31",
+      "resultedAt": "2026-04-09T02:16:32.051Z",
+      "analyzedAt": "2026-04-04T19:50:45.033Z"
+    },
+    {
+      "id": "evt_1775701068039_0pk3g",
+      "type": "earnings",
+      "eventDate": "2026-04-13",
+      "eventTime": "08:30",
+      "status": "analyzed",
+      "createdAt": "2026-04-09T02:17:48.044Z",
+      "ticker": "GS",
+      "companyName": "Goldman Sachs",
+      "epsEstimate": "16.28",
+      "epsPrevious": "14.01",
+      "revenueEstimate": "16.83",
+      "revenuePrevious": "13.45",
+      "economicName": null,
+      "economicConsensus": null,
+      "economicPrevious": null,
+      "economicUnit": "",
+      "notes": "",
+      "analysis": {
+        "analystConsensus": {
+          "eps": "$16.28",
+          "revenue": "$16.83B"
+        },
+        "marketConsensusEstimate": {
+          "eps": "$17.50",
+          "revenue": "$17.20B",
+          "direction": "ABOVE_ANALYST",
+          "rationale": "Recent stock drift showing 89% one-year rally and March Basel III capital relief creating bullish momentum. Options put/call ratio of 0.95 shows balanced sentiment, while declining short interest suggests reduced bearish positioning ahead of earnings."
+        },
+        "proxySignals": {
+          "analystRevisions": "Recent mixed signals with Evercore lowering PT from $1075 to $950 and Jefferies cutting from $1125 to $1049, but maintaining Buy ratings. No major downgrades in March 2026.",
+          "stockDrift": "Strong bullish setup with 89% one-year gain, though YTD down 5.6% and declined from Jan high of $970.75. Recent 4.79% single-day pop on earnings anticipation shows positive momentum.",
+          "optionsSentiment": "Put/call ratio of 0.95 indicates balanced sentiment with slight bullish bias. IV building ahead of earnings with typical contango structure. Institutional hedging concentrated at $50 strike intervals.",
+          "shortInterest": "Short interest at 5.812M shares (1.9% of float), relatively low level suggesting limited bearish positioning. Borrow rates remain modest indicating shares available for shorting."
+        },
+        "myForecast": {
+          "eps": "$17.25",
+          "revenue": "$17.10B",
+          "rationale": "Basel III capital relief unlocks share buyback potential while M&A revival and trading revenue should exceed consensus. Insider selling at $965 suggests near-term ceiling but earnings beat likely."
+        },
+        "expectedMove": {
+          "percent": "±6.8%",
+          "direction": "UP",
+          "rationale": "Strong fundamental setup with regulatory tailwinds and M&A recovery momentum outweighs valuation concerns and insider selling pressure."
+        },
+        "trade": {
+          "direction": "BUY",
+          "asset": "GS CFD",
+          "entry": "$860",
+          "tp": "$920",
+          "sl": "$820",
+          "rationale": "Basel III regulatory unlock and earnings beat potential supports upside target, with stop below March lows to limit downside risk."
+        },
+        "confidenceScore": 72,
+        "keyRisks": [
+          "Insider selling of $112M in Q1 signals potential valuation ceiling",
+          "Private credit market concerns could pressure asset management revenues",
+          "Rising geopolitical tensions adding operational costs and trading volatility"
+        ]
+      },
       "actualEps": null,
       "actualRevenue": null,
       "actualEconomic": null,
       "resultOutcome": null,
       "resultNotes": null,
       "resultedAt": null,
-      "analyzedAt": "2026-04-04T19:50:45.033Z"
+      "analyzedAt": "2026-04-09T02:18:27.201Z"
     }
   ]
 }
