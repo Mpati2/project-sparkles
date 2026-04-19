@@ -3,7 +3,7 @@ const express = require('express');
 const fetch = require('node-fetch');
 const cors = require('cors');
 const path = require('path');
-const fs = require('fs');
+const { Pool } = require('pg');
 
 const app = express();
 app.use(cors());
@@ -13,32 +13,64 @@ app.use(express.static(path.join(__dirname, 'public')));
 const CLAUDE_KEY = process.env.CLAUDE_KEY;
 const PORT = process.env.PORT || 3000;
 
-// ── PERSISTENT STORAGE ──
-const DATA_FILE = path.join(__dirname, 'events.json');
-const PORTFOLIO_FILE = path.join(__dirname, 'portfolio.json');
+// ── DATABASE ──
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
+});
 
-function loadData() {
-  try {
-    if (fs.existsSync(DATA_FILE)) return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
-  } catch (e) { console.error('Load error:', e.message); }
-  return { events: [] };
-}
+async function initDB() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS events (
+      id TEXT PRIMARY KEY,
+      type TEXT,
+      event_date TEXT,
+      event_time TEXT,
+      status TEXT DEFAULT 'pending',
+      created_at TEXT,
+      ticker TEXT,
+      company_name TEXT,
+      eps_estimate TEXT,
+      eps_previous TEXT,
+      revenue_estimate TEXT,
+      revenue_previous TEXT,
+      economic_name TEXT,
+      economic_consensus TEXT,
+      economic_previous TEXT,
+      economic_unit TEXT DEFAULT '',
+      notes TEXT DEFAULT '',
+      analysis JSONB,
+      actual_eps TEXT,
+      actual_revenue TEXT,
+      actual_economic TEXT,
+      result_outcome TEXT,
+      result_notes TEXT,
+      resulted_at TEXT,
+      analyzed_at TEXT
+    );
 
-function saveData(data) {
-  try { fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2)); }
-  catch (e) { console.error('Save error:', e.message); }
-}
+    CREATE TABLE IF NOT EXISTS trades (
+      id TEXT PRIMARY KEY,
+      asset TEXT,
+      direction TEXT,
+      entry_price TEXT,
+      exit_price TEXT,
+      pnl NUMERIC,
+      trade_date TEXT,
+      trade_time TEXT,
+      linked_event_id TEXT,
+      notes TEXT DEFAULT '',
+      created_at TEXT
+    );
 
-function loadPortfolio() {
-  try {
-    if (fs.existsSync(PORTFOLIO_FILE)) return JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf8'));
-  } catch (e) { console.error('Portfolio load error:', e.message); }
-  return { startingBalance: 10000, trades: [] };
-}
+    CREATE TABLE IF NOT EXISTS portfolio (
+      key TEXT PRIMARY KEY,
+      value TEXT
+    );
 
-function savePortfolio(data) {
-  try { fs.writeFileSync(PORTFOLIO_FILE, JSON.stringify(data, null, 2)); }
-  catch (e) { console.error('Portfolio save error:', e.message); }
+    INSERT INTO portfolio (key, value) VALUES ('starting_balance', '10000') ON CONFLICT DO NOTHING;
+  `);
+  console.log('Database ready');
 }
 
 // ── HEALTH CHECK ──
@@ -47,79 +79,98 @@ app.get('/api/status', (req, res) => {
 });
 
 // ── GET ALL EVENTS ──
-app.get('/api/events', (req, res) => {
+app.get('/api/events', async (req, res) => {
   const { type } = req.query;
-  const data = loadData();
-  const events = type ? data.events.filter(e => e.type === type) : data.events;
-  events.sort((a, b) => {
-    const aDate = new Date(a.eventDate);
-    const bDate = new Date(b.eventDate);
-    const now = new Date();
-    const aPast = aDate < now;
-    const bPast = bDate < now;
-    if (aPast !== bPast) return aPast ? 1 : -1;
-    return aPast ? bDate - aDate : aDate - bDate;
-  });
-  res.json({ events });
+  try {
+    const query = type
+      ? 'SELECT * FROM events WHERE type = $1 ORDER BY event_date ASC'
+      : 'SELECT * FROM events ORDER BY event_date ASC';
+    const params = type ? [type] : [];
+    const result = await pool.query(query, params);
+    const events = result.rows.map(dbToEvent);
+    res.json({ events });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
+function dbToEvent(row) {
+  return {
+    id: row.id,
+    type: row.type,
+    eventDate: row.event_date,
+    eventTime: row.event_time,
+    status: row.status,
+    createdAt: row.created_at,
+    ticker: row.ticker,
+    companyName: row.company_name,
+    epsEstimate: row.eps_estimate,
+    epsPrevious: row.eps_previous,
+    revenueEstimate: row.revenue_estimate,
+    revenuePrevious: row.revenue_previous,
+    economicName: row.economic_name,
+    economicConsensus: row.economic_consensus,
+    economicPrevious: row.economic_previous,
+    economicUnit: row.economic_unit || '',
+    notes: row.notes || '',
+    analysis: row.analysis,
+    actualEps: row.actual_eps,
+    actualRevenue: row.actual_revenue,
+    actualEconomic: row.actual_economic,
+    resultOutcome: row.result_outcome,
+    resultNotes: row.result_notes,
+    resultedAt: row.resulted_at,
+    analyzedAt: row.analyzed_at,
+  };
+}
+
 // ── ADD EVENT ──
-app.post('/api/events', (req, res) => {
+app.post('/api/events', async (req, res) => {
   const { type, ticker, companyName, eventDate, eventTime,
           epsEstimate, epsPrevious, revenueEstimate, revenuePrevious,
-          economicName, economicConsensus, economicPrevious, economicUnit,
-          notes } = req.body;
+          economicName, economicConsensus, economicPrevious, economicUnit, notes } = req.body;
 
   if (!type || !eventDate) return res.status(400).json({ error: 'type and eventDate required' });
 
-  const data = loadData();
   const id = `evt_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+  const now = new Date().toISOString();
 
-  const event = {
-    id, type, eventDate,
-    eventTime: eventTime || '08:30',
-    status: 'pending',
-    createdAt: new Date().toISOString(),
-    ticker: ticker?.toUpperCase() || null,
-    companyName: companyName || null,
-    epsEstimate: epsEstimate || null,
-    epsPrevious: epsPrevious || null,
-    revenueEstimate: revenueEstimate || null,
-    revenuePrevious: revenuePrevious || null,
-    economicName: economicName || null,
-    economicConsensus: economicConsensus || null,
-    economicPrevious: economicPrevious || null,
-    economicUnit: economicUnit || '',
-    notes: notes || '',
-    analysis: null,
-    actualEps: null,
-    actualRevenue: null,
-    actualEconomic: null,
-    resultOutcome: null,
-    resultNotes: null,
-    resultedAt: null,
-  };
+  try {
+    await pool.query(`
+      INSERT INTO events (id, type, event_date, event_time, status, created_at,
+        ticker, company_name, eps_estimate, eps_previous, revenue_estimate, revenue_previous,
+        economic_name, economic_consensus, economic_previous, economic_unit, notes)
+      VALUES ($1,$2,$3,$4,'pending',$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
+    `, [id, type, eventDate, eventTime || '08:30', now,
+        ticker?.toUpperCase() || null, companyName || null,
+        epsEstimate || null, epsPrevious || null, revenueEstimate || null, revenuePrevious || null,
+        economicName || null, economicConsensus || null, economicPrevious || null,
+        economicUnit || '', notes || '']);
 
-  data.events.push(event);
-  saveData(data);
-  res.json({ event });
+    const result = await pool.query('SELECT * FROM events WHERE id = $1', [id]);
+    res.json({ event: dbToEvent(result.rows[0]) });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ── DELETE EVENT ──
-app.delete('/api/events/:id', (req, res) => {
-  const data = loadData();
-  data.events = data.events.filter(e => e.id !== req.params.id);
-  saveData(data);
-  res.json({ ok: true });
+app.delete('/api/events/:id', async (req, res) => {
+  try {
+    await pool.query('DELETE FROM events WHERE id = $1', [req.params.id]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ── ANALYZE EVENT ──
 app.post('/api/events/:id/analyze', async (req, res) => {
-  const data = loadData();
-  const event = data.events.find(e => e.id === req.params.id);
-  if (!event) return res.status(404).json({ error: 'Event not found' });
-  if (!CLAUDE_KEY) return res.status(500).json({ error: 'Claude key not set in .env' });
+  const result = await pool.query('SELECT * FROM events WHERE id = $1', [req.params.id]);
+  if (result.rows.length === 0) return res.status(404).json({ error: 'Event not found' });
+  if (!CLAUDE_KEY) return res.status(500).json({ error: 'Claude key not set' });
 
+  const event = dbToEvent(result.rows[0]);
   const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   let prompt;
 
@@ -189,11 +240,16 @@ Return ONLY this JSON (no markdown):
     const match = text.match(/\{[\s\S]*\}/);
     if (!match) throw new Error('Could not parse Claude JSON response');
 
-    event.analysis = JSON.parse(match[0]);
-    event.status = 'analyzed';
-    event.analyzedAt = new Date().toISOString();
-    saveData(data);
-    res.json({ event });
+    const analysis = JSON.parse(match[0]);
+    const now = new Date().toISOString();
+
+    await pool.query(
+      'UPDATE events SET analysis = $1, status = $2, analyzed_at = $3 WHERE id = $4',
+      [JSON.stringify(analysis), 'analyzed', now, event.id]
+    );
+
+    const updated = await pool.query('SELECT * FROM events WHERE id = $1', [event.id]);
+    res.json({ event: dbToEvent(updated.rows[0]) });
   } catch (err) {
     console.error('Analyze error:', err.message);
     res.status(500).json({ error: err.message });
@@ -201,117 +257,123 @@ Return ONLY this JSON (no markdown):
 });
 
 // ── RECORD RESULT ──
-app.post('/api/events/:id/result', (req, res) => {
+app.post('/api/events/:id/result', async (req, res) => {
   const { actualEps, actualRevenue, actualEconomic, resultOutcome, resultNotes } = req.body;
-  const data = loadData();
-  const event = data.events.find(e => e.id === req.params.id);
-  if (!event) return res.status(404).json({ error: 'Event not found' });
-
-  event.actualEps = actualEps || null;
-  event.actualRevenue = actualRevenue || null;
-  event.actualEconomic = actualEconomic || null;
-  event.resultOutcome = resultOutcome;
-  event.resultNotes = resultNotes || null;
-  event.status = resultOutcome ? 'resulted' : 'analyzed';
-  event.resultedAt = new Date().toISOString();
-
-  saveData(data);
-  res.json({ event });
+  try {
+    const status = resultOutcome ? 'resulted' : 'analyzed';
+    await pool.query(
+      'UPDATE events SET actual_eps=$1, actual_revenue=$2, actual_economic=$3, result_outcome=$4, result_notes=$5, status=$6, resulted_at=$7 WHERE id=$8',
+      [actualEps || null, actualRevenue || null, actualEconomic || null,
+       resultOutcome || null, resultNotes || null, status, new Date().toISOString(), req.params.id]
+    );
+    const updated = await pool.query('SELECT * FROM events WHERE id = $1', [req.params.id]);
+    res.json({ event: dbToEvent(updated.rows[0]) });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ── STATS ──
-app.get('/api/stats', (req, res) => {
-  const data = loadData();
-  const resulted = data.events.filter(e => e.status === 'resulted');
-  const correct = resulted.filter(e => e.resultOutcome === 'correct').length;
-  const partial = resulted.filter(e => e.resultOutcome === 'partial').length;
-  const incorrect = resulted.filter(e => e.resultOutcome === 'incorrect').length;
-  const total = resulted.length;
-  res.json({
-    total, correct, partial, incorrect,
-    winRate: total > 0 ? Math.round((correct / total) * 100) : 0,
-  });
+app.get('/api/stats', async (req, res) => {
+  try {
+    const r = await pool.query("SELECT result_outcome, COUNT(*) FROM events WHERE status='resulted' GROUP BY result_outcome");
+    let correct = 0, partial = 0, incorrect = 0;
+    r.rows.forEach(row => {
+      if (row.result_outcome === 'correct') correct = parseInt(row.count);
+      if (row.result_outcome === 'partial') partial = parseInt(row.count);
+      if (row.result_outcome === 'incorrect') incorrect = parseInt(row.count);
+    });
+    const total = correct + partial + incorrect;
+    res.json({ total, correct, partial, incorrect, winRate: total > 0 ? Math.round((correct / total) * 100) : 0 });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// ── PORTFOLIO: GET ALL TRADES ──
-app.get('/api/portfolio', (req, res) => {
-  const portfolio = loadPortfolio();
-  res.json(portfolio);
+// ── PORTFOLIO: GET ──
+app.get('/api/portfolio', async (req, res) => {
+  try {
+    const balRow = await pool.query("SELECT value FROM portfolio WHERE key='starting_balance'");
+    const startingBalance = parseFloat(balRow.rows[0]?.value || 10000);
+    const trades = await pool.query('SELECT * FROM trades ORDER BY trade_date ASC, trade_time ASC');
+    res.json({ startingBalance, trades: trades.rows.map(dbToTrade) });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
+
+function dbToTrade(row) {
+  return {
+    id: row.id, asset: row.asset, direction: row.direction,
+    entryPrice: row.entry_price, exitPrice: row.exit_price,
+    pnl: parseFloat(row.pnl), tradeDate: row.trade_date, tradeTime: row.trade_time,
+    linkedEventId: row.linked_event_id, notes: row.notes, createdAt: row.created_at,
+  };
+}
 
 // ── PORTFOLIO: ADD TRADE ──
-app.post('/api/portfolio/trades', (req, res) => {
+app.post('/api/portfolio/trades', async (req, res) => {
   const { asset, direction, entryPrice, exitPrice, pnl, tradeDate, tradeTime, linkedEventId, notes } = req.body;
   if (!asset || pnl === undefined) return res.status(400).json({ error: 'asset and pnl required' });
 
-  const portfolio = loadPortfolio();
   const id = `trade_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`;
-
-  const trade = {
-    id,
-    asset,
-    direction: direction || 'BUY',
-    entryPrice: entryPrice || null,
-    exitPrice: exitPrice || null,
-    pnl: parseFloat(pnl),
-    tradeDate: tradeDate || new Date().toISOString().split('T')[0],
-    tradeTime: tradeTime || new Date().toTimeString().slice(0, 5),
-    linkedEventId: linkedEventId || null,
-    notes: notes || '',
-    createdAt: new Date().toISOString(),
-  };
-
-  portfolio.trades.push(trade);
-  savePortfolio(portfolio);
-  res.json({ trade });
+  try {
+    await pool.query(
+      'INSERT INTO trades (id, asset, direction, entry_price, exit_price, pnl, trade_date, trade_time, linked_event_id, notes, created_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)',
+      [id, asset, direction || 'BUY', entryPrice || null, exitPrice || null,
+       parseFloat(pnl), tradeDate || new Date().toISOString().split('T')[0],
+       tradeTime || '12:00', linkedEventId || null, notes || '', new Date().toISOString()]
+    );
+    const result = await pool.query('SELECT * FROM trades WHERE id = $1', [id]);
+    res.json({ trade: dbToTrade(result.rows[0]) });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ── PORTFOLIO: DELETE TRADE ──
-app.delete('/api/portfolio/trades/:id', (req, res) => {
-  const portfolio = loadPortfolio();
-  portfolio.trades = portfolio.trades.filter(t => t.id !== req.params.id);
-  savePortfolio(portfolio);
-  res.json({ ok: true });
+app.delete('/api/portfolio/trades/:id', async (req, res) => {
+  try {
+    await pool.query('DELETE FROM trades WHERE id = $1', [req.params.id]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// ── PORTFOLIO: UPDATE STARTING BALANCE ──
-app.post('/api/portfolio/balance', (req, res) => {
+// ── PORTFOLIO: UPDATE BALANCE ──
+app.post('/api/portfolio/balance', async (req, res) => {
   const { startingBalance } = req.body;
-  const portfolio = loadPortfolio();
-  portfolio.startingBalance = parseFloat(startingBalance);
-  savePortfolio(portfolio);
-  res.json({ ok: true });
+  try {
+    await pool.query("INSERT INTO portfolio (key, value) VALUES ('starting_balance', $1) ON CONFLICT (key) DO UPDATE SET value = $1", [String(startingBalance)]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// ── S&P 500 DATA (Yahoo Finance unofficial) ──
+// ── S&P 500 ──
 app.get('/api/sp500', async (req, res) => {
-  const { interval } = req.query; // 5m, 1h, 1d, 1wk
+  const { interval } = req.query;
   const validIntervals = { '5m': { interval: '5m', range: '1d' }, '1h': { interval: '1h', range: '5d' }, '1d': { interval: '1d', range: '1mo' }, '1wk': { interval: '1wk', range: '1y' } };
   const params = validIntervals[interval] || validIntervals['1d'];
-
   try {
     const url = `https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC?interval=${params.interval}&range=${params.range}`;
-    const r = await fetch(url, {
-      headers: { 'User-Agent': 'Mozilla/5.0' }
-    });
+    const r = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
     if (!r.ok) throw new Error(`Yahoo Finance error ${r.status}`);
     const data = await r.json();
     const result = data.chart?.result?.[0];
     if (!result) throw new Error('No data');
-
     const timestamps = result.timestamp || [];
     const closes = result.indicators?.quote?.[0]?.close || [];
     const firstClose = closes.find(c => c != null);
-
     const points = timestamps.map((ts, i) => ({
       time: ts * 1000,
       price: closes[i],
       pct: firstClose ? ((closes[i] - firstClose) / firstClose) * 100 : 0,
     })).filter(p => p.price != null);
-
     res.json({ points });
   } catch (err) {
-    console.error('SP500 error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -321,33 +383,29 @@ app.post('/api/chat', async (req, res) => {
   const { messages, systemPrompt } = req.body;
   if (!messages) return res.status(400).json({ error: 'messages required' });
   if (!CLAUDE_KEY) return res.status(500).json({ error: 'Claude key not set' });
-
   try {
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': CLAUDE_KEY,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 600,
-        system: systemPrompt || 'You are a helpful financial analyst assistant embedded in Project Sparkles.',
-        messages,
-      })
+      headers: { 'Content-Type': 'application/json', 'x-api-key': CLAUDE_KEY, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 600, system: systemPrompt || 'You are a helpful financial analyst.', messages })
     });
-
     if (!r.ok) { const e = await r.json(); throw new Error(e.error?.message || 'Claude error'); }
     const data = await r.json();
     const reply = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
     res.json({ reply });
-  } catch(err) {
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`\n✦ Project Sparkles running at http://localhost:${PORT}`);
-  console.log(`  Claude key: ${CLAUDE_KEY && CLAUDE_KEY !== 'your_anthropic_key_here' ? '✓ set' : '✗ missing — edit .env'}\n`);
+// ── START ──
+initDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`\n✦ Project Sparkles running at http://localhost:${PORT}`);
+    console.log(`  Claude key: ${CLAUDE_KEY && CLAUDE_KEY !== 'your_anthropic_key_here' ? '✓ set' : '✗ missing'}`);
+    console.log(`  Database: PostgreSQL\n`);
+  });
+}).catch(err => {
+  console.error('Failed to initialize database:', err.message);
+  process.exit(1);
 });
