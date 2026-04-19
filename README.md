@@ -1,20 +1,29 @@
-# ✨ Project Sparkles: Quant AI Terminal
+# STAREDOWN v3
 
-A full-stack application that leverages LLM orchestration to identify market mispricing by analyzing real-time financial data against analyst consensus.
+Real-money multiplayer staring contest with Google login, Stripe payments, and global leaderboard.
 
-## 🛠 Tech Stack
-- **Backend:** Node.js, Express
-- **Frontend:** HTML5, CSS3 (Terminal UI), JavaScript (ES6+)
-- **AI Engine:** Claude 3.5 Sonnet API
-- **Data Ingestion:** Alpha Vantage & Finnhub REST APIs
+## Railway Environment Variables Required
 
-## 🏗 Architecture
-Project Sparkles uses a dual-layer approach:
-1. **Inference Layer:** Uses AI to generate independent forecasts for economic events (CPI, NFP) and corporate earnings.
-2. **Execution Layer:** Maps forecasts to structured trade signals including Direction, Entry, Take-Profit, and Stop-Loss.
+Set these in Railway → Variables:
 
-## 🚀 Setup
-1. Clone the repo: `git clone https://github.com/YOUR_USERNAME/project-sparkles.git`
-2. Install dependencies: `npm install`
-3. Create a `.env` file with your `CLAUDE_KEY` and `FINNHUB_KEY`.
-4. Start the server: `node server.js`
+```
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+FIREBASE_SERVICE_ACCOUNT={"type":"service_account",...}
+BASE_URL=https://your-railway-url.up.railway.app
+```
+
+## Firebase Service Account
+
+1. Go to Firebase Console → Project Settings → Service Accounts
+2. Click "Generate new private key"
+3. Copy the entire JSON content
+4. Paste it as the FIREBASE_SERVICE_ACCOUNT variable in Railway (as one line)
+
+## Stripe Webhook
+
+1. Go to Stripe Dashboard → Developers → Webhooks
+2. Add endpoint: https://your-url/webhook
+3. Select event: checkout.session.completed
+4. Copy the signing secret → set as STRIPE_WEBHOOK_SECRET in Railway
