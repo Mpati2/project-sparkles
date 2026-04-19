@@ -307,191 +307,58 @@
     .portfolio-top { grid-template-columns: 1fr 1fr; }
   }
 
-  /* ── CHAT PANEL ── */
-  .chat-toggle {
-    position: fixed;
-    bottom: 28px;
-    right: 28px;
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.3rem;
-    z-index: 200;
-    box-shadow: 0 4px 24px rgba(124,92,252,0.5);
-    transition: transform 0.2s, box-shadow 0.2s;
-  }
-  .chat-toggle:hover { transform: scale(1.08); box-shadow: 0 6px 32px rgba(124,92,252,0.7); }
-
-  .chat-panel {
-    position: fixed;
-    bottom: 92px;
-    right: 28px;
-    width: 380px;
-    height: 560px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    display: flex;
-    flex-direction: column;
-    z-index: 199;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-    transform: scale(0.95) translateY(10px);
-    opacity: 0;
-    pointer-events: none;
-    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-  .chat-panel.open {
-    transform: scale(1) translateY(0);
-    opacity: 1;
-    pointer-events: all;
-  }
-
-  .chat-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 18px;
-    border-bottom: 1px solid var(--border);
-    border-radius: 16px 16px 0 0;
-    background: var(--surface2);
-  }
-  .chat-header-left { display: flex; align-items: center; gap: 10px; }
-  .chat-header-icon { font-size: 1rem; }
-  .chat-header-title { font-size: 0.82rem; font-weight: 700; }
-  .chat-header-sub { font-size: 0.65rem; color: var(--muted); font-family: var(--mono); }
-  .chat-clear { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.68rem; font-family: var(--mono); padding: 4px 8px; border-radius: 4px; }
-  .chat-clear:hover { color: var(--text); background: var(--border); }
-
-  .chat-context-bar {
-    padding: 8px 14px;
-    background: rgba(124,92,252,0.08);
-    border-bottom: 1px solid var(--border);
-    font-size: 0.68rem;
-    color: var(--accent);
-    font-family: var(--mono);
-    display: none;
-  }
-  .chat-context-bar.active { display: block; }
-
-  .chat-messages {
-    flex: 1;
-    overflow-y: auto;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  .chat-messages::-webkit-scrollbar { width: 4px; }
-  .chat-messages::-webkit-scrollbar-track { background: transparent; }
-  .chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-  .chat-msg { display: flex; flex-direction: column; gap: 4px; animation: fadeUp 0.2s ease; }
-  @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-
-  .chat-msg.user { align-items: flex-end; }
-  .chat-msg.assistant { align-items: flex-start; }
-
-  .chat-bubble {
-    max-width: 85%;
-    padding: 10px 14px;
-    border-radius: 12px;
-    font-size: 0.78rem;
-    line-height: 1.55;
-  }
-  .chat-msg.user .chat-bubble { background: linear-gradient(135deg, var(--accent), #5a3fd8); color: #fff; border-radius: 12px 12px 2px 12px; }
-  .chat-msg.assistant .chat-bubble { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 12px 12px 12px 2px; }
-
-  .chat-msg-time { font-size: 0.58rem; color: var(--muted); font-family: var(--mono); }
-
-  .chat-typing { display: flex; gap: 4px; align-items: center; padding: 12px 14px; }
-  .chat-typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); animation: typingDot 1.2s infinite; }
-  .chat-typing span:nth-child(2) { animation-delay: 0.2s; }
-  .chat-typing span:nth-child(3) { animation-delay: 0.4s; }
-  @keyframes typingDot { 0%,60%,100%{opacity:0.3;transform:scale(0.8)} 30%{opacity:1;transform:scale(1)} }
-
-  .chat-quick-btns {
-    display: flex;
-    gap: 6px;
-    padding: 8px 14px;
-    overflow-x: auto;
-    border-top: 1px solid var(--border);
-  }
-  .chat-quick-btns::-webkit-scrollbar { display: none; }
-  .quick-btn {
-    white-space: nowrap;
-    padding: 5px 10px;
-    font-size: 0.65rem;
-    font-family: var(--mono);
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    border-radius: 20px;
-    cursor: pointer;
-    transition: all 0.15s;
-    flex-shrink: 0;
-  }
-  .quick-btn:hover { border-color: var(--accent); color: var(--accent); }
-
-  .chat-input-row {
-    display: flex;
-    gap: 8px;
-    padding: 12px 14px;
-    border-top: 1px solid var(--border);
-    background: var(--surface2);
-    border-radius: 0 0 16px 16px;
-  }
-  .chat-input {
-    flex: 1;
+  /* ── INLINE CHAT ── */
+  .inline-chat {
     background: var(--bg);
     border: 1px solid var(--border);
-    color: var(--text);
-    font-family: var(--sans);
-    font-size: 0.78rem;
-    padding: 9px 12px;
-    border-radius: 8px;
-    outline: none;
-    resize: none;
-    min-height: 38px;
-    max-height: 100px;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 4px;
   }
-  .chat-input:focus { border-color: var(--accent); }
-  .chat-send {
-    width: 38px;
-    height: 38px;
-    border-radius: 8px;
-    background: linear-gradient(135deg, var(--accent), #5a3fd8);
-    border: none;
-    color: #fff;
-    font-size: 1rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    transition: opacity 0.2s;
-  }
-  .chat-send:hover { opacity: 0.85; }
-  .chat-send:disabled { opacity: 0.4; cursor: not-allowed; }
 
-  .chat-empty {
-    flex: 1;
+  .inline-chat-msgs {
+    max-height: 280px;
+    overflow-y: auto;
+    padding: 14px;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    color: var(--muted);
-    text-align: center;
-    padding: 20px;
+    gap: 10px;
   }
-  .chat-empty .icon { font-size: 2rem; opacity: 0.3; }
-  .chat-empty p { font-size: 0.75rem; line-height: 1.5; max-width: 220px; }
+  .inline-chat-msgs::-webkit-scrollbar { width: 3px; }
+  .inline-chat-msgs::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .inline-chat-empty { font-size: 0.72rem; color: var(--muted); line-height: 1.5; }
+
+  .inline-msg { display: flex; flex-direction: column; gap: 3px; animation: fadeUp 0.2s ease; }
+  .inline-msg.user { align-items: flex-end; }
+  .inline-msg.assistant { align-items: flex-start; }
+
+  .inline-bubble {
+    max-width: 90%;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 0.76rem;
+    line-height: 1.55;
+  }
+  .inline-msg.user .inline-bubble { background: linear-gradient(135deg, var(--accent), #5a3fd8); color: #fff; border-radius: 10px 10px 2px 10px; }
+  .inline-msg.assistant .inline-bubble { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px 10px 10px 2px; }
+
+  .inline-typing { display: flex; gap: 4px; padding: 8px 12px; }
+  .inline-typing span { width: 5px; height: 5px; border-radius: 50%; background: var(--muted); animation: typingDot 1.2s infinite; }
+  .inline-typing span:nth-child(2) { animation-delay: 0.2s; }
+  .inline-typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typingDot { 0%,60%,100%{opacity:0.3;transform:scale(0.8)} 30%{opacity:1;transform:scale(1)} }
+
+  .inline-quick-btns { display: flex; gap: 6px; padding: 8px 12px; overflow-x: auto; border-top: 1px solid var(--border); background: var(--surface2); }
+  .inline-quick-btns::-webkit-scrollbar { display: none; }
+  .quick-btn { white-space: nowrap; padding: 4px 10px; font-size: 0.63rem; font-family: var(--mono); background: var(--bg); border: 1px solid var(--border); color: var(--muted); border-radius: 20px; cursor: pointer; transition: all 0.15s; flex-shrink: 0; }
+  .quick-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .inline-input-row { display: flex; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--border); background: var(--surface2); }
+  .inline-input { flex: 1; background: var(--bg); border: 1px solid var(--border); color: var(--text); font-family: var(--sans); font-size: 0.76rem; padding: 8px 12px; border-radius: 6px; outline: none; }
+  .inline-input:focus { border-color: var(--accent); }
+  .inline-send { width: 34px; height: 34px; border-radius: 6px; background: linear-gradient(135deg, var(--accent), #5a3fd8); border: none; color: #fff; font-size: 0.9rem; cursor: pointer; flex-shrink: 0; transition: opacity 0.2s; }
+  .inline-send:hover { opacity: 0.85; }
 </style>
 </head>
 <body>
@@ -876,6 +743,27 @@
     }
   }
 
+  function renderInlineChat(evId) {
+    return `
+    <div class="section-divider" style="margin-top:18px">Ask Claude</div>
+    <div class="inline-chat" id="inlineChat-${evId}">
+      <div class="inline-chat-msgs" id="inlineMsgs-${evId}">
+        <div class="inline-chat-empty">Question any signal, challenge the rationale, or ask for a bull/bear case.</div>
+      </div>
+      <div class="inline-quick-btns">
+        <button class="quick-btn" onclick="sendInline('${evId}','Why this direction?')">Why this direction?</button>
+        <button class="quick-btn" onclick="sendInline('${evId}','What could invalidate this?')">Invalidation?</button>
+        <button class="quick-btn" onclick="sendInline('${evId}','Bull vs Bear case')">Bull vs Bear</button>
+        <button class="quick-btn" onclick="sendInline('${evId}','How confident should I be?')">Confidence check</button>
+        <button class="quick-btn" onclick="sendInline('${evId}','What macro risks matter most?')">Macro risks</button>
+      </div>
+      <div class="inline-input-row">
+        <input class="inline-input" id="inlineInput-${evId}" placeholder="Ask anything about this analysis..." onkeydown="if(event.key==='Enter')sendInline('${evId}',null)" />
+        <button class="inline-send" onclick="sendInline('${evId}',null)">➤</button>
+      </div>
+    </div>`;
+  }
+
   function renderAnalysis(ev) {
     const a = ev.analysis;
     if (!a) return `<div class="analysis-section"><div class="analyze-prompt"><span style="font-size:1.1rem">✦</span><span>No AI analysis yet.</span><button class="btn btn-sm btn-primary" style="margin-left:auto;white-space:nowrap" onclick="analyzeEvent('${ev.id}')">✦ Analyze</button></div></div>`;
@@ -910,7 +798,10 @@
           ${ps.shortInterest ? `<div class="signal-item"><div class="sig-label">Short Interest</div>${ps.shortInterest}</div>` : ''}
         </div>` : ''}
         ${risks.length ? `<div class="risks">${risks.map(r => `<span class="risk-tag">⚠ ${r}</span>`).join('')}</div>` : ''}
-        <button class="btn btn-sm btn-ghost" onclick="analyzeEvent('${ev.id}')" style="margin-top:8px">↻ Re-analyze</button>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn btn-sm btn-ghost" onclick="analyzeEvent('${ev.id}')">↻ Re-analyze</button>
+        </div>
+        ${renderInlineChat(ev.id)}
       </div>`;
     } else {
       const trade = a.trade || {}; const risks = a.keyRisks || [];
@@ -937,7 +828,10 @@
           <div class="confidence-bar"><div class="confidence-fill" style="width:${a.confidenceScore || 0}%"></div></div>
         </div>
         ${risks.length ? `<div class="risks">${risks.map(r => `<span class="risk-tag">⚠ ${r}</span>`).join('')}</div>` : ''}
-        <button class="btn btn-sm btn-ghost" onclick="analyzeEvent('${ev.id}')" style="margin-top:8px">↻ Re-analyze</button>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn btn-sm btn-ghost" onclick="analyzeEvent('${ev.id}')">↻ Re-analyze</button>
+        </div>
+        ${renderInlineChat(ev.id)}
       </div>`;
     }
   }
@@ -1181,174 +1075,86 @@
 
   init();
 
-  // ── CHAT ──
-  let chatOpen = false;
-  let chatHistory = [];
-  let chatContext = null; // holds current event analysis for context
+  // ── INLINE CHAT ──
+  const inlineChatHistories = {}; // per event id
 
-  function toggleChat() {
-    chatOpen = !chatOpen;
-    document.getElementById('chatPanel').classList.toggle('open', chatOpen);
-  }
+  async function sendInline(evId, quickMsg) {
+    const input = document.getElementById(`inlineInput-${evId}`);
+    const msg = quickMsg || input.value.trim();
+    if (!msg) return;
+    if (input) input.value = '';
 
-  function clearChat() {
-    chatHistory = [];
-    chatContext = null;
-    document.getElementById('chatContextBar').classList.remove('active');
-    document.getElementById('chatMessages').innerHTML = `<div class="chat-empty" id="chatEmpty"><div class="icon">✦</div><p>Ask Claude anything about the analysis, signals, or trade rationale. You can also challenge its conclusions.</p></div>`;
-  }
+    if (!inlineChatHistories[evId]) inlineChatHistories[evId] = [];
 
-  function setChatContext(eventId) {
-    const ev = events.find(e => e.id === eventId);
-    if (!ev || !ev.analysis) return;
-    chatContext = ev;
-    const name = ev.type === 'earnings' ? ev.ticker : ev.economicName;
-    document.getElementById('chatContextLabel').textContent = name;
-    document.getElementById('chatContextBar').classList.add('active');
-    if (!chatOpen) toggleChat();
-    addChatMessage('assistant', `I'm now focused on **${name}**. Ask me anything about the signals, trade rationale, or challenge my analysis.`);
-  }
-
-  function onChatKey(e) {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
-  }
-
-  function sendQuick(msg) {
-    document.getElementById('chatInput').value = msg;
-    sendChat();
-  }
-
-  function addChatMessage(role, text) {
-    const empty = document.getElementById('chatEmpty');
+    const msgs = document.getElementById(`inlineMsgs-${evId}`);
+    // Remove empty placeholder
+    const empty = msgs.querySelector('.inline-chat-empty');
     if (empty) empty.remove();
 
-    const msgs = document.getElementById('chatMessages');
-    const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    const div = document.createElement('div');
-    div.className = `chat-msg ${role}`;
-    div.innerHTML = `<div class="chat-bubble">${text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>')}</div><div class="chat-msg-time">${time}</div>`;
-    msgs.appendChild(div);
+    // Add user bubble
+    const userDiv = document.createElement('div');
+    userDiv.className = 'inline-msg user';
+    userDiv.innerHTML = `<div class="inline-bubble">${msg}</div>`;
+    msgs.appendChild(userDiv);
     msgs.scrollTop = msgs.scrollHeight;
-  }
 
-  function addTypingIndicator() {
-    const msgs = document.getElementById('chatMessages');
-    const div = document.createElement('div');
-    div.className = 'chat-msg assistant';
-    div.id = 'chatTyping';
-    div.innerHTML = `<div class="chat-bubble chat-typing"><span></span><span></span><span></span></div>`;
-    msgs.appendChild(div);
+    inlineChatHistories[evId].push({ role: 'user', content: msg });
+
+    // Typing indicator
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'inline-msg assistant';
+    typingDiv.id = `typing-${evId}`;
+    typingDiv.innerHTML = `<div class="inline-bubble inline-typing"><span></span><span></span><span></span></div>`;
+    msgs.appendChild(typingDiv);
     msgs.scrollTop = msgs.scrollHeight;
-  }
 
-  function removeTypingIndicator() {
-    const el = document.getElementById('chatTyping');
-    if (el) el.remove();
-  }
+    // Build system prompt with full event analysis context
+    const ev = events.find(e => e.id === evId);
+    let systemPrompt = `You are an expert financial analyst embedded in Project Sparkles, a CFD trading tool. 
+Be concise, direct, and honest. If the analysis has weaknesses, say so clearly.
+Today: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.`;
 
-  async function sendChat() {
-    const input = document.getElementById('chatInput');
-    const msg = input.value.trim();
-    if (!msg) return;
-
-    input.value = '';
-    addChatMessage('user', msg);
-    chatHistory.push({ role: 'user', content: msg });
-
-    const sendBtn = document.getElementById('chatSendBtn');
-    sendBtn.disabled = true;
-    addTypingIndicator();
-
-    // Build system prompt with context
-    let systemPrompt = `You are an expert financial analyst and intraday CFD trader embedded in Project Sparkles, a trading analysis tool. 
-You help traders question, challenge, and understand AI-generated trade analyses. 
-Be concise, direct, and honest — if the analysis has weaknesses, say so.
-Today's date: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.`;
-
-    if (chatContext && chatContext.analysis) {
-      const ev = chatContext;
+    if (ev && ev.analysis) {
       const a = ev.analysis;
       const isEarnings = ev.type === 'earnings';
-      systemPrompt += `\n\nCurrent event context:\nType: ${ev.type}\n`;
-      if (isEarnings) {
-        systemPrompt += `Company: ${ev.ticker} ${ev.companyName || ''}\nEPS Estimate: ${ev.epsEstimate || 'N/A'}\nEPS Previous: ${ev.epsPrevious || 'N/A'}\n`;
-        systemPrompt += `AI Analysis: ${JSON.stringify(a, null, 2)}`;
-      } else {
-        systemPrompt += `Event: ${ev.economicName}\nConsensus: ${ev.economicConsensus}${ev.economicUnit}\nPrevious: ${ev.economicPrevious}${ev.economicUnit}\n`;
-        systemPrompt += `AI Analysis: ${JSON.stringify(a, null, 2)}`;
-      }
+      systemPrompt += `\n\nYou previously generated this analysis. The user is questioning it:\n`;
+      systemPrompt += `Event: ${isEarnings ? ev.ticker + ' ' + (ev.companyName||'') : ev.economicName}\n`;
+      systemPrompt += `Type: ${ev.type}\n`;
+      if (isEarnings) systemPrompt += `EPS Estimate: ${ev.epsEstimate || 'N/A'} | Previous: ${ev.epsPrevious || 'N/A'}\n`;
+      else systemPrompt += `Consensus: ${ev.economicConsensus}${ev.economicUnit} | Previous: ${ev.economicPrevious}${ev.economicUnit}\n`;
+      systemPrompt += `Full analysis JSON: ${JSON.stringify(a)}`;
     }
 
     try {
-      const r = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': '', // handled by backend proxy
-        },
-        body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 600, system: systemPrompt, messages: chatHistory })
-      });
-
-      // Use backend proxy instead
-      const proxyR = await fetch('/api/chat', {
+      const r = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: chatHistory, systemPrompt })
+        body: JSON.stringify({ messages: inlineChatHistories[evId], systemPrompt })
       });
 
-      if (!proxyR.ok) throw new Error('Chat error');
-      const data = await proxyR.json();
-      const reply = data.reply || 'Sorry, I could not get a response.';
-      chatHistory.push({ role: 'assistant', content: reply });
-      removeTypingIndicator();
-      addChatMessage('assistant', reply);
+      const el = document.getElementById(`typing-${evId}`);
+      if (el) el.remove();
+
+      if (!r.ok) throw new Error('Chat error');
+      const data = await r.json();
+      const reply = data.reply || 'No response.';
+      inlineChatHistories[evId].push({ role: 'assistant', content: reply });
+
+      const replyDiv = document.createElement('div');
+      replyDiv.className = 'inline-msg assistant';
+      replyDiv.innerHTML = `<div class="inline-bubble">${reply.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>')}</div>`;
+      msgs.appendChild(replyDiv);
+      msgs.scrollTop = msgs.scrollHeight;
     } catch(e) {
-      removeTypingIndicator();
-      addChatMessage('assistant', '⚠️ Error: ' + e.message);
+      const el = document.getElementById(`typing-${evId}`);
+      if (el) el.remove();
+      const errDiv = document.createElement('div');
+      errDiv.className = 'inline-msg assistant';
+      errDiv.innerHTML = `<div class="inline-bubble" style="color:var(--red)">⚠️ ${e.message}</div>`;
+      msgs.appendChild(errDiv);
     }
-
-    sendBtn.disabled = false;
   }
+
 </script>
-
-<!-- CHAT TOGGLE BUTTON -->
-<button class="chat-toggle" onclick="toggleChat()" title="Ask Claude">✦</button>
-
-<!-- CHAT PANEL -->
-<div class="chat-panel" id="chatPanel">
-  <div class="chat-header">
-    <div class="chat-header-left">
-      <span class="chat-header-icon">✦</span>
-      <div>
-        <div class="chat-header-title">Ask Claude</div>
-        <div class="chat-header-sub">Question any signal or analysis</div>
-      </div>
-    </div>
-    <button class="chat-clear" onclick="clearChat()">Clear</button>
-  </div>
-
-  <div class="chat-context-bar" id="chatContextBar">📌 Context: <span id="chatContextLabel">General</span></div>
-
-  <div class="chat-messages" id="chatMessages">
-    <div class="chat-empty" id="chatEmpty">
-      <div class="icon">✦</div>
-      <p>Ask Claude anything about the analysis, signals, or trade rationale. You can also challenge its conclusions.</p>
-    </div>
-  </div>
-
-  <div class="chat-quick-btns">
-    <button class="quick-btn" onclick="sendQuick('Why did you flag this as a SHORT?')">Why SHORT?</button>
-    <button class="quick-btn" onclick="sendQuick('What could invalidate this trade?')">Invalidation?</button>
-    <button class="quick-btn" onclick="sendQuick('How reliable are the proxy signals?')">Signal reliability?</button>
-    <button class="quick-btn" onclick="sendQuick('What is the market pricing in and why?')">Market pricing?</button>
-    <button class="quick-btn" onclick="sendQuick('Give me a bear case and a bull case.')">Bull vs Bear</button>
-    <button class="quick-btn" onclick="sendQuick('What macro factors could affect this trade?')">Macro factors?</button>
-  </div>
-
-  <div class="chat-input-row">
-    <textarea class="chat-input" id="chatInput" placeholder="Ask about signals, challenge the analysis..." rows="1" onkeydown="onChatKey(event)"></textarea>
-    <button class="chat-send" id="chatSendBtn" onclick="sendChat()">➤</button>
-  </div>
-</div>
 </body>
 </html>
